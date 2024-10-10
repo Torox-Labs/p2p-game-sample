@@ -15,7 +15,7 @@ class test_cube: public nya_system::app
 private:
 	bool on_splash()
 	{
-	    nya_log::log()<<"on_splash\n";
+	    log()<<"on_splash\n";
 
 		nya_render::set_clear_color(0.0f,0.6f,0.7f,1.0f);
 		nya_render::clear(true,true);
@@ -25,7 +25,7 @@ private:
 
 	void on_init()
 	{
-	    nya_log::log()<<"on_init\n";
+	    log()<<"on_init\n";
 
 	    nya_render::set_clear_color(0.2f,0.4f,0.5f,0.0f);
 		nya_render::set_clear_depth(1.0f);
@@ -125,7 +125,7 @@ private:
 
     void on_resize(unsigned int w,unsigned int h)
     {
-        nya_log::log()<<"on_resize "<<w<<" "<<h<<"\n";
+        log()<<"on_resize "<<w<<" "<<h<<"\n";
 
         if(!w || !h)
             return;
@@ -137,7 +137,7 @@ private:
 
 	void on_free()
 	{
-		nya_log::log()<<"on_free\n";
+		log()<<"on_free\n";
 
 		m_vbo.release();
 		m_shader.release();
@@ -170,13 +170,13 @@ private:
 {
 
 #ifdef __ANDROID__
-        nya_log::set_log(new nya_log::android_log("test_cube"));
+        set_log(new android_log("test_cube"));
 #endif
 
     test_cube app;
     app.set_title("Loading, please wait...");
     app.start_windowed(100,100,640,480,0);
-    nya_log::log()<<"exit success\n";
+    log()<<"exit success\n";
 
     return 0;
 }

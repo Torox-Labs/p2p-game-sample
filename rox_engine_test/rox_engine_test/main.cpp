@@ -171,7 +171,7 @@ private:
 //{
 //
 //#ifdef __ANDROID__
-//	nya_log::set_log(new nya_log::android_log("test_cube"));
+//	set_log(new android_log("test_cube"));
 //#endif
 
 int main(int argc, char** argv)
