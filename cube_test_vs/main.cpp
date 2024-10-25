@@ -1,69 +1,67 @@
-#include "system/app.h"
-#include "system/system.h"
-#include "render/vbo.h"
-#include "render/shader.h"
-#include "render/render.h"
-#include "system/shaders_cache_provider.h"
-#include "logger/log.h"
+#include "RoxApp/RoxApp.h"
+#include "RoxRender/RoxVbo.h"
+#include "RoxRender/RoxShader.h"
+#include "RoxRender/RoxRender.h"
+#include "RoxLogger/RoxLogger.h"
 
 #include <sstream>
 
-class test_cube : public nya_system::app
+class testCube : public RoxApp::RoxApp
 {
 private:
-	bool on_splash()
+	bool onSplash()
 	{
-		rox_log::log() << "on_splash\n";
+		RoxLogger::log() << "Splash\n";
 
-		nya_render::set_clear_color(0.0f, 0.6f, 0.7f, 1.0f);
-		nya_render::clear(true, true);
+		RoxRender::setClearColor(1.0f, 0, 0, 1.0f);
+		RoxRender::clear(true, true);
 
 		return true;
 	}
 
-	void on_init()
+	void onInit()
 	{
-		rox_log::log() << "on_init\n";
+		RoxLogger::log() << "Init\n";
 
-		nya_render::set_clear_color(0.2f, 0.4f, 0.5f, 0.0f);
-		nya_render::set_clear_depth(1.0f);
-		nya_render::depth_test::enable(nya_render::depth_test::less);
+		RoxRender::setClearColor(0.8f, 0, 0, 0.0f);
+		RoxRender::setClearDepth(1.0f);
+		RoxRender::DepthTest::enable(RoxRender::DepthTest::LESS);
 
 		float vertices[] =
 		{
 			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-			-0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-			-0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-			-0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
-			 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-			 0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 1.0f,
-			 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f,
-			 0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			-0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 1.0f,
+			0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+			0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 1.0f,
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f,
+			0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f
 		};
 
 		unsigned short indices[] =
 		{
-			0,2,1, 1,2,3, // -x
-			4,5,6, 5,7,6, // +x
-			0,1,5, 0,5,4, // -y
-			2,6,7, 2,7,3, // +y
-			0,4,6, 0,6,2, // -z
-			1,3,7, 1,7,5, // +z
+			0, 2, 1, 1, 2, 3, // -x
+			4, 5, 6, 5, 7, 6, // +x
+			0, 1, 5, 0, 5, 4, // -y
+			2, 6, 7, 2, 7, 3, // +y
+			0, 4, 6, 0, 6, 2, // -z
+			1, 3, 7, 1, 7, 5, // +z
 		};
 
-		m_vbo.set_vertex_data(vertices, sizeof(float) * 6, 8);
-		m_vbo.set_vertices(0, 3);
-		m_vbo.set_colors(sizeof(float) * 3, 3);
-		m_vbo.set_index_data(indices, nya_render::vbo::index2b,
+		m_vbo.setVertexData(vertices, sizeof(float) * 6, 8);
+		m_vbo.setVertices(0, 3);
+		m_vbo.setColors(sizeof(float) * 3, 3);
+		m_vbo.setIndexData(indices, RoxRender::RoxVbo::INDEX_2D,
 			sizeof(indices) / sizeof(unsigned short));
 
 		/*
-		if(nya_render::get_render_api()==nya_render::render_api_directx11)
+		if(RoxRender::get_render_api()==RoxRender::render_api_directx11)
 		{
-			static nya_system::compiled_shaders_provider csp;
-			csp.set_load_path( nya_system::get_app_path() );
-			csp.set_save_path( nya_system::get_app_path() );
-			nya_render::set_compiled_shaders_provider( &csp );
+			static RoxSystem::compiled_shaders_provider csp;
+			csp.set_load_path( RoxSystem::get_app_path() );
+			csp.set_save_path( RoxSystem::get_app_path() );
+			RoxRender::set_compiled_shaders_provider( &csp );
 		}
 		*/
 
@@ -82,23 +80,24 @@ private:
 			"gl_FragColor=color;"
 			"}";
 
-		m_shader.add_program(nya_render::shader::vertex, vs_code);
-		m_shader.add_program(nya_render::shader::pixel, ps_code);
+		m_shader.addProgram(RoxRender::RoxShader::VERTEX, vs_code);
+		m_shader.addProgram(RoxRender::RoxShader::PIXEL, ps_code);
 	}
 
-	void on_frame(unsigned int dt)
+	void onFrame(unsigned int dt)
 	{
-		nya_render::clear(true, true);
+		//RoxLogger::log() << "Frame\n";
+		RoxRender::clear(true, true);
 
 		m_rot += dt * 0.05f;
 		if (m_rot > 360)
 			m_rot = 0;
 
-		nya_math::mat4 mv;
+		RoxMath::Matrix4 mv;
 		mv.translate(0, 0, -2.0f);
 		mv.rotate(30.0f, 1.0f, 0.0f, 0.0f);
 		mv.rotate(m_rot, 0.0f, 1.0f, 0.0f);
-		nya_render::set_modelview_matrix(mv);
+		RoxRender::setModelviewMatrix(mv);
 
 		m_shader.bind();
 		m_vbo.bind();
@@ -114,63 +113,58 @@ private:
 			std::ostringstream os;
 			os << "test cube " << fps_counter << " fps";
 			std::string str = os.str();
-			set_title(str.c_str());
+			setTitle(str.c_str());
 
 			fps_update_timer %= 1000;
 			fps_counter = 0;
 		}
 	}
 
-	void on_resize(unsigned int w, unsigned int h)
+	void onResize(unsigned int w, unsigned int h)
 	{
-		rox_log::log() << "on_resize " << w << " " << h << "\n";
+		RoxLogger::log() << "on_resize " << w << " " << h << "\n";
 
 		if (!w || !h)
 			return;
 
-		nya_math::mat4 proj;
+		RoxMath::Matrix4 proj;
 		proj.perspective(70.0f, float(w) / h, 0.01f, 100.0f);
-		nya_render::set_projection_matrix(proj);
+		RoxRender::setProjectionMatrix(proj);
 	}
 
-	void on_free()
+	void onFree()
 	{
-		rox_log::log() << "on_free\n";
+		RoxLogger::log() << "on_free\n";
 
 		m_vbo.release();
 		m_shader.release();
 	}
 
-	void on_keyboard(unsigned int key, bool pressed)
-	{
-		if ((key == nya_system::key_back || key == nya_system::key_escape) && !pressed)
-			finish();
-	}
+	//void on_keyboard(unsigned int key, bool pressed)
+	//{
+	//	/*if ((key == RoxInput::KEY_BACK || key == RoxInput::KEY_ESCAPE) && !pressed)
+	//		finish();*/
+	//}
 
 public:
-	test_cube() : m_rot(0.0f) {}
+	testCube() : m_rot(0.0f) {}
 
 private:
-	nya_render::vbo m_vbo;
-	nya_render::shader m_shader;
+	RoxRender::RoxVbo m_vbo;
+	RoxRender::RoxShader m_shader;
 	float m_rot;
 };
 
-#ifdef _WIN32
-#ifdef WINDOWS_FLUENT
-int main(Platform::Array<Platform::String^>^ args)
-#else
-//int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+
 int main(int argc, char** argv)
-#endif
-#else
-int main(int argc, char** argv)
-#endif
 {
-	test_cube app;
-	app.set_title("Loading, please wait...");
-	app.start_windowed(100, 100, 640, 480, 0);
-	rox_log::log() << "exit success\n";
+	testCube app;
+	RoxLogger::log() << "App Created\n";
+	//app.setTitle("Loading, please wait...");
+	RoxLogger::log() << "Title " << app.getTitle() << "\n";
+	
+	app.startWindowed(100, 100, 640, 480, 0);
+	RoxLogger::log() << "exit success\n";
 
 	return 0;
 }
