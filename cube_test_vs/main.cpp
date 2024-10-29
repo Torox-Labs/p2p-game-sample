@@ -1,31 +1,40 @@
-#include "RoxApp/RoxApp.h"
-#include "RoxRender/RoxVbo.h"
-#include "RoxRender/RoxShader.h"
-#include "RoxRender/RoxRender.h"
-#include "RoxLogger/RoxLogger.h"
+#include <RoxApp/RoxApp.h>
+#include <RoxRender/RoxVbo.h>
+#include <RoxRender/RoxShader.h>
+#include <RoxRender/RoxRender.h>
+#include <RoxLogger/RoxLogger.h>
+#include <RoxInput/RoxInput.h>
+#include <RoxScene/RoxScene.h>
+#include <RoxScene/location.h>
+#include <RoxScene/camera.h>
+#include <RoxRender/RoxRenderOpengl.h>
 
 #include <sstream>
 
 class testCube : public RoxApp::RoxApp
 {
 private:
-	bool onSplash()
+	bool onSplash() override
 	{
 		RoxLogger::log() << "Splash\n";
 
-		RoxRender::setClearColor(1.0f, 0, 0, 1.0f);
+		RoxRender::setClearColor(1.0f, 0.5f, 0, 1.0f);
 		RoxRender::clear(true, true);
 
 		return true;
 	}
 
-	void onInit()
+	void onInit() override
 	{
 		RoxLogger::log() << "Init\n";
 
-		RoxRender::setClearColor(0.8f, 0, 0, 0.0f);
+		RoxRender::setClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+
 		RoxRender::setClearDepth(1.0f);
 		RoxRender::DepthTest::enable(RoxRender::DepthTest::LESS);
+
+		RoxRender::CullFace::enable(RoxRender::CullFace::CW);
+		
 
 		float vertices[] =
 		{
@@ -54,16 +63,7 @@ private:
 		m_vbo.setColors(sizeof(float) * 3, 3);
 		m_vbo.setIndexData(indices, RoxRender::RoxVbo::INDEX_2D,
 			sizeof(indices) / sizeof(unsigned short));
-
-		/*
-		if(RoxRender::get_render_api()==RoxRender::render_api_directx11)
-		{
-			static RoxSystem::compiled_shaders_provider csp;
-			csp.set_load_path( RoxSystem::get_app_path() );
-			csp.set_save_path( RoxSystem::get_app_path() );
-			RoxRender::set_compiled_shaders_provider( &csp );
-		}
-		*/
+		
 
 		const char* vs_code =
 			"varying vec4 color;"
@@ -84,9 +84,8 @@ private:
 		m_shader.addProgram(RoxRender::RoxShader::PIXEL, ps_code);
 	}
 
-	void onFrame(unsigned int dt)
+	void onFrame(unsigned int dt) override
 	{
-		//RoxLogger::log() << "Frame\n";
 		RoxRender::clear(true, true);
 
 		m_rot += dt * 0.05f;
@@ -96,8 +95,14 @@ private:
 		RoxMath::Matrix4 mv;
 		mv.translate(0, 0, -2.0f);
 		mv.rotate(30.0f, 1.0f, 0.0f, 0.0f);
-		mv.rotate(m_rot, 0.0f, 1.0f, 0.0f);
-		RoxRender::setModelviewMatrix(mv);
+		//mv.rotate(m_rot, 0.0f, 1.0f, 0.0f);
+
+		m_camera.set_pos(m_move_x, m_move_y, m_move_z);
+		m_camera.set_rot(m_rotate_x, m_rotate_y, m_rotate_z);
+
+		RoxRender::setModelviewMatrix(m_camera.get_view_matrix());
+
+		//RoxRender::setCamera(m_camera.get_view_matrix());
 
 		m_shader.bind();
 		m_vbo.bind();
@@ -111,7 +116,7 @@ private:
 		if (fps_update_timer > 1000)
 		{
 			std::ostringstream os;
-			os << "test cube " << fps_counter << " fps";
+			os << "Rox Engine Demo " << fps_counter << " fps";
 			std::string str = os.str();
 			setTitle(str.c_str());
 
@@ -120,7 +125,7 @@ private:
 		}
 	}
 
-	void onResize(unsigned int w, unsigned int h)
+	void onResize(unsigned int w, unsigned int h) override
 	{
 		RoxLogger::log() << "on_resize " << w << " " << h << "\n";
 
@@ -132,7 +137,7 @@ private:
 		RoxRender::setProjectionMatrix(proj);
 	}
 
-	void onFree()
+	void onFree() override
 	{
 		RoxLogger::log() << "on_free\n";
 
@@ -140,16 +145,119 @@ private:
 		m_shader.release();
 	}
 
-	//void on_keyboard(unsigned int key, bool pressed)
-	//{
-	//	/*if ((key == RoxInput::KEY_BACK || key == RoxInput::KEY_ESCAPE) && !pressed)
-	//		finish();*/
-	//}
+	void onKeyDown(unsigned int key, bool pressed) override
+	{
+		RoxLogger::log() << "key " << key << " " << pressed << "\n";
+
+		if ((key == ::RoxInput::KEY_BACK || key == ::RoxInput::KEY_ESCAPE) && !pressed)
+			finish();
+
+		if(key == ::RoxInput::KEY_W && pressed)
+		{
+			RoxLogger::log() << "A pressed\n";
+			m_move_z += 0.1f;
+		}
+
+		if (key == ::RoxInput::KEY_S && pressed)
+		{
+			RoxLogger::log() << "D pressed\n";
+			m_move_z -= 0.1f;
+		}
+
+		if(key == ::RoxInput::KEY_SHIFT && pressed)
+			if ((key == ::RoxInput::KEY_W) && pressed)
+			{
+				RoxLogger::log() << "Shift + A pressed\n";
+				m_move_z += 10.0f;
+			}
+		
+		if (key == ::RoxInput::KEY_SHIFT && pressed)
+			if (key == ::RoxInput::KEY_S && key == ::RoxInput::KEY_SHIFT && pressed)
+			{
+				RoxLogger::log() << "Shift + D pressed\n";
+				m_move_z -= 10.0f;
+			}
+
+
+		if (key == ::RoxInput::KEY_D && pressed)
+		{
+			RoxLogger::log() << "D pressed\n";
+			m_move_x -= 0.1f; 
+		}
+
+		if (key == ::RoxInput::KEY_A && pressed)
+		{
+			RoxLogger::log() << "A pressed\n";
+			m_move_x += 0.1f;
+		}
+
+		if (key == ::RoxInput::KEY_Q && pressed)
+		{
+			RoxLogger::log() << "Q pressed\n";
+
+			m_move_y += 0.1f;
+		}
+
+		if (key == ::RoxInput::KEY_E && pressed)
+		{
+			RoxLogger::log() << "E pressed\n";
+			m_move_y -= 0.1f;
+		}
+
+
+		
+	}
+
+	void onMouseScroll(int dx, int dy) override
+	{
+		m_rotate_x += dy * 0.1f;
+
+		m_move_y += dy * 0.1f;
+
+		RoxLogger::log() << "mouse scroll dx: " << dx << " dy: " << dy << "\n";
+	}
+
+	void onMouseMove(int x, int y) override
+	{
+		//RoxLogger::log() << "mouse move X: " << x << " Y: " << y << "\n";
+	}
+
+	void onMouseButton(::RoxInput::MOUSE_BOTTON button, bool pressed) override
+	{
+		//RoxLogger::log() << "mouse button " << button << " | " << pressed << "\n";
+		if (button == ::RoxInput::MOUSE_BOTTON::MOUSE_LEFT && pressed)
+		{
+			
+			
+		}
+
+		if (button == ::RoxInput::MOUSE_BOTTON::MOUSE_RIGHT && pressed)
+		{
+			RoxLogger::log() << "Right mouse button pressed\n";
+		}
+
+		if (button == ::RoxInput::MOUSE_BOTTON::MOUSE_MIDDLE && pressed)
+		{
+			RoxLogger::log() << "Middle mouse button pressed\n";
+		}
+	}
 
 public:
 	testCube() : m_rot(0.0f) {}
 
 private:
+	// Camera Movment and Rotation keys
+	float m_move_z = 0;
+	float m_move_x = 0;
+	float m_move_y = 0;
+	float m_rotate_z = 0;
+	float m_rotate_x = 0;
+	float m_rotate_y = 0;
+
+
+	RoxScene::camera m_camera;
+
+
 	RoxRender::RoxVbo m_vbo;
 	RoxRender::RoxShader m_shader;
 	float m_rot;
@@ -164,7 +272,7 @@ int main(int argc, char** argv)
 	RoxLogger::log() << "Title " << app.getTitle() << "\n";
 	
 	app.startWindowed(100, 100, 640, 480, 0);
-	RoxLogger::log() << "exit success\n";
+	//RoxLogger::log() << "exit success\n";
 
 	return 0;
 }
