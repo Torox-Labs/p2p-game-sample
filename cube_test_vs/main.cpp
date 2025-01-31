@@ -1,13 +1,13 @@
+#include <iostream>
 #include <RoxApp/RoxApp.h>
 #include <RoxRender/RoxVbo.h>
 #include <RoxRender/RoxShader.h>
 #include <RoxRender/RoxRender.h>
 #include <RoxLogger/RoxLogger.h>
 #include <RoxInput/RoxInput.h>
-#include <RoxScene/RoxScene.h>
 #include <RoxScene/location.h>
 #include <RoxScene/camera.h>
-#include <RoxRender/RoxRenderOpengl.h>
+#include <RoxScene/mesh.h>
 
 #include <sstream>
 
@@ -24,6 +24,26 @@ private:
 		return true;
 	}
 
+	void testFileReading(const char* path)
+	{
+		FILE* file = nullptr;
+		fopen_s(&file, path, "rb");
+
+		if (!file)
+		{
+			std::cerr << "Failed to open file: " << path << std::endl;
+			return;
+		}
+
+		fseek(file, 0, SEEK_END);
+		size_t fileSize = ftell(file);
+		fseek(file, 0, SEEK_SET);
+
+		std::cout << "File size: " << fileSize << " bytes." << std::endl;
+
+		fclose(file);
+	}
+
 	void onInit() override
 	{
 		RoxLogger::log() << "Init\n";
@@ -33,8 +53,18 @@ private:
 		RoxRender::setClearDepth(1.0f);
 		RoxRender::DepthTest::enable(RoxRender::DepthTest::LESS);
 
-		RoxRender::CullFace::enable(RoxRender::CullFace::CW);
-		
+		RoxScene::mesh::register_load_function(RoxScene::mesh::load_nms);
+
+		//testFileReading("D:/Dev/rox-engine-build/x64/Debug/new.nms");
+
+
+		//bool boolValue = m_mesh.load("D:/Dev/rox-engine-build/x64/Debug/new.nms");
+		//if (!boolValue)
+		//{
+		//	// Handle loading error
+		//	std::cerr << "Failed to load NMS mesh file." << std::endl;
+		//	return;
+		//}
 
 		float vertices[] =
 		{
@@ -65,20 +95,27 @@ private:
 			sizeof(indices) / sizeof(unsigned short));
 		
 
-		const char* vs_code =
-			"varying vec4 color;"
-			"void main()"
-			"{"
-			"color=gl_Color;"
-			"gl_Position=gl_ModelViewProjectionMatrix*gl_Vertex;"
-			"}";
+		const char* vs_code = R"(
+			varying vec4 color;
+			void main()
+			{
+			color=gl_Color;
+			gl_Position=gl_ModelViewProjectionMatrix*gl_Vertex;
+		})";
 
-		const char* ps_code =
-			"varying vec4 color;"
-			"void main()"
-			"{"
-			"gl_FragColor=color;"
-			"}";
+		const char* ps_code = R"(
+
+		    // Input from vertex shader
+		    in vec4 fragColor;
+
+		    // Output fragment color
+		    out vec4 FragColor;
+
+		    void main()
+		    {
+		        FragColor = fragColor;
+		    }
+		)";
 
 		m_shader.addProgram(RoxRender::RoxShader::VERTEX, vs_code);
 		m_shader.addProgram(RoxRender::RoxShader::PIXEL, ps_code);
@@ -95,12 +132,13 @@ private:
 		RoxMath::Matrix4 mv;
 		mv.translate(0, 0, -2.0f);
 		mv.rotate(30.0f, 1.0f, 0.0f, 0.0f);
-		//mv.rotate(m_rot, 0.0f, 1.0f, 0.0f);
-
+		mv.rotate(m_rot, 0.0f, 1.0f, 0.0f);
+		
 		m_camera.set_pos(m_move_x, m_move_y, m_move_z);
 		m_camera.set_rot(m_rotate_x, m_rotate_y, m_rotate_z);
+		//RoxRender::setModelviewMatrix(m_camera.get_view_matrix());
 
-		RoxRender::setModelviewMatrix(m_camera.get_view_matrix());
+		RoxRender::setModelviewMatrix(mv);
 
 		//RoxRender::setCamera(m_camera.get_view_matrix());
 
@@ -109,6 +147,8 @@ private:
 		m_vbo.draw();
 		m_vbo.unbind();
 		m_shader.unbind();
+
+		//m_mesh.draw();
 
 		static unsigned int fps_counter = 0, fps_update_timer = 0;
 		++fps_counter;
@@ -247,7 +287,7 @@ public:
 
 private:
 	// Camera Movment and Rotation keys
-	float m_move_z = 0;
+	float m_move_z = 2;
 	float m_move_x = 0;
 	float m_move_y = 0;
 	float m_rotate_z = 0;
@@ -256,6 +296,7 @@ private:
 
 
 	RoxScene::camera m_camera;
+	RoxScene::mesh m_mesh;
 
 
 	RoxRender::RoxVbo m_vbo;
