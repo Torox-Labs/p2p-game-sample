@@ -95,27 +95,20 @@ private:
 			sizeof(indices) / sizeof(unsigned short));
 		
 
-		const char* vs_code = R"(
-			varying vec4 color;
-			void main()
-			{
-			color=gl_Color;
-			gl_Position=gl_ModelViewProjectionMatrix*gl_Vertex;
-		})";
+		const char* vs_code = R"(//#version 330 core		
+								varying vec4 color;
+								void main()
+								{
+								color=gl_Color;
+								gl_Position=gl_ModelViewProjectionMatrix*gl_Vertex;
+							})";
 
-		const char* ps_code = R"(
-
-		    // Input from vertex shader
-		    in vec4 fragColor;
-
-		    // Output fragment color
-		    out vec4 FragColor;
-
-		    void main()
-		    {
-		        FragColor = fragColor;
-		    }
-		)";
+		const char* ps_code = R"(//#version 330 core
+								varying vec4 color;
+								void main()
+								{
+								gl_FragColor=color;
+							})";
 
 		m_shader.addProgram(RoxRender::RoxShader::VERTEX, vs_code);
 		m_shader.addProgram(RoxRender::RoxShader::PIXEL, ps_code);
