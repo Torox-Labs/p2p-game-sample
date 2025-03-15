@@ -1,6 +1,8 @@
 #include <iostream>
+#include <sstream>
+
 #include <RoxApp/RoxApp.h>
-#include <RoxRender/RoxVbo.h>
+#include <RoxRender/RoxVBO.h>
 #include <RoxRender/RoxShader.h>
 #include <RoxRender/RoxRender.h>
 #include <RoxLogger/RoxLogger.h>
@@ -8,8 +10,9 @@
 #include <RoxScene/location.h>
 #include <RoxScene/camera.h>
 #include <RoxScene/mesh.h>
-
-#include <sstream>
+#include <RoxSystem/RoxSystem.h>
+#include <RoxSystem/RoxShadersCacheProvider.h>
+#include <RoxRender/RoxRenderOpengl.h>
 
 class testCube : public RoxApp::RoxApp
 {
@@ -17,6 +20,7 @@ private:
 	bool onSplash() override
 	{
 		RoxLogger::log() << "Splash\n";
+		RoxLogger::log() << "This is just a number\n";
 
 		RoxRender::setClearColor(1.0f, 0.5f, 0, 1.0f);
 		RoxRender::clear(true, true);
@@ -68,50 +72,119 @@ private:
 
 		float vertices[] =
 		{
-			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-			-0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 1.0f,
-			0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-			0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 1.0f,
-			0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f,
-			0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f
+			-0.5f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f, // Top Left
+			-0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, // Bottom Left
+			0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f, // Bottom Right
+			0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f  // Top Right
 		};
 
 		unsigned short indices[] =
 		{
-			0, 2, 1, 1, 2, 3, // -x
-			4, 5, 6, 5, 7, 6, // +x
-			0, 1, 5, 0, 5, 4, // -y
-			2, 6, 7, 2, 7, 3, // +y
-			0, 4, 6, 0, 6, 2, // -z
-			1, 3, 7, 1, 7, 5, // +z
+			0, 1, 2, // First Triangle
+			0, 2, 3  // Second Triangle
 		};
 
-		m_vbo.setVertexData(vertices, sizeof(float) * 6, 8);
+		// Total size of each vertex: 6 floats (3 for position + 3 for color)
+		m_vbo.setVertexData(vertices, sizeof(float) * 6, 4);
+
+		// Position attribute: starts at offset 0, 3 components (x, y, z)
 		m_vbo.setVertices(0, 3);
+
+		// Color attribute: starts after the position data (offset of 3 * sizeof(float)), 3 components (r, g, b)
 		m_vbo.setColors(sizeof(float) * 3, 3);
-		m_vbo.setIndexData(indices, RoxRender::RoxVbo::INDEX_2D,
-			sizeof(indices) / sizeof(unsigned short));
+
+		// Set the index data
+		m_vbo.setIndexData(indices, RoxRender::RoxVBO::INDEX_2D,sizeof(indices) / sizeof(unsigned short));
+
+		const char* vs_code = 
+			R"(//#version 330 core	
+				layout (location = 0) in vec3 aPos;
+				layout (location = 1) in vec3 aColor;
+
+				uniform mat4 _rox_ModelViewProjectionMatrix;
+
+				out vec4 vertexColor;										
+				//out vec4 vertexPosition;
+				void main(){
+					//vertexColor = vec4(aColor.xyz, 1.0);
+					vertexColor = vec4(1.0, 1.0, 0.0, 1.0);
+					//vertexPosition = _rox_ModelViewProjectionMatrix * vec4(aPos.xyz, 1.0);
+					gl_Position = _rox_ModelViewProjectionMatrix * vec4(aPos.xyz, 1.0);
+				}
+			)";
+
+		const char* ft_code =
+			R"(//#version 330 core
+
+				in vec4 vertexColor;
+				out vec4 FragColor;
+				
+				//uniform vec4 outColor;
+
+				void main(){
+					FragColor = vertexColor;
+				}			
+			)";
+
+		RoxRender::RoxCompiledShader shader;
+		RoxSystem::RoxShaderCacheProvider shader_cache_provider;
+
+		shader_cache_provider.setLoadPath(RoxSystem::getAppPath());
+		shader_cache_provider.setSavePath(RoxSystem::getAppPath());
+
+		// Combined Both Shaders Text for saving
+		size_t vs_length = strlen(vs_code);
+		size_t ft_length = strlen(ft_code);
+		size_t total_length = vs_length + ft_length + 1; // +1 for the null terminator
 		
+		char* combined = new char[total_length];
+		strcpy_s(combined, total_length, vs_code);
+		strcat_s(combined, total_length, ft_code);
 
-		const char* vs_code = R"(//#version 330 core		
-								varying vec4 color;
-								void main()
-								{
-								color=gl_Color;
-								gl_Position=gl_ModelViewProjectionMatrix*gl_Vertex;
-							})";
 
-		const char* ps_code = R"(//#version 330 core
-								varying vec4 color;
-								void main()
-								{
-								gl_FragColor=color;
-							})";
+		bool shader_exist = shader_cache_provider.get(combined, shader);
+		std::cout << "Shader Exist: " << (shader_exist ? "true" : "false") << "\n";
 
-		m_shader.addProgram(RoxRender::RoxShader::VERTEX, vs_code);
-		m_shader.addProgram(RoxRender::RoxShader::PIXEL, ps_code);
+		
+		if (!shader_exist)
+		{
+			RoxRender::RoxShader::setBinaryShaderCachingEnabled(true);
+			m_shader.addProgram(RoxRender::RoxShader::VERTEX, vs_code);
+			m_shader.addProgram(RoxRender::RoxShader::PIXEL, ft_code);
+
+			
+			if (m_shader.getProgramBinaryShader(shader))
+			{
+				std::cout << "Saving binary data to disk\n";
+				shader_cache_provider.set(combined, shader);
+			}
+		}
+		else
+		{
+			if (shader_cache_provider.get(combined, shader))
+			{
+				std::cout << "Load binary data to disk\n";
+				if (!m_shader.setProgramBinaryShader(vs_code, ft_code, shader))
+					std::cout << "Error loading binary data";
+			}
+			
+		}
+
+		//m_shader.setUniform(0, 1.0f, 0.0f, 0.0f, 1.0f);
+		int uniform_count = m_shader.getUniformsCount();
+		//std::cout << "Uniform count: " << uniform_count << std::endl;
+		if (uniform_count > 0)
+			for (int i = 0; i < uniform_count; ++i)
+			{
+				std::cout << "Uniform name: " << m_shader.getUniformName(i) << std::endl;
+			}
+		//m_shader.setUniform(0, 1.0f, 0.0f, 0.0f, 1.0f);
+
+		RoxRender::Rectangle viewportInfo = RoxRender::getViewport();
+		std::cout << "x:" << viewportInfo.x << " y: " << viewportInfo.y << " width: " << viewportInfo.width << " height: " << viewportInfo.height << "\n";
+		std::cout << "App Path: " << RoxSystem::getAppPath()<< std::endl;
+		std::cout << "User Path: " << RoxSystem::getUserPath() << std::endl;
+
 	}
 
 	void onFrame(unsigned int dt) override
@@ -131,7 +204,7 @@ private:
 		m_camera.set_rot(m_rotate_x, m_rotate_y, m_rotate_z);
 		//RoxRender::setModelviewMatrix(m_camera.get_view_matrix());
 
-		RoxRender::setModelviewMatrix(mv);
+		RoxRender::setModelViewMatrix(mv);
 
 		//RoxRender::setCamera(m_camera.get_view_matrix());
 
@@ -227,7 +300,6 @@ private:
 		if (key == ::RoxInput::KEY_Q && pressed)
 		{
 			RoxLogger::log() << "Q pressed\n";
-
 			m_move_y += 0.1f;
 		}
 
@@ -244,16 +316,17 @@ private:
 	void onMouseScroll(int dx, int dy) override
 	{
 		m_rotate_x += dy * 0.1f;
-
 		m_move_y += dy * 0.1f;
 
 		RoxLogger::log() << "mouse scroll dx: " << dx << " dy: " << dy << "\n";
+		std::cout << "mouse scroll dx: " << dx << " dy: " << dy << "\n";
 	}
 
 	void onMouseMove(int x, int y) override
 	{
 		//RoxLogger::log() << "mouse move X: " << x << " Y: " << y << "\n";
 	}
+
 
 	void onMouseButton(::RoxInput::MOUSE_BOTTON button, bool pressed) override
 	{
@@ -275,6 +348,7 @@ private:
 		}
 	}
 
+
 public:
 	testCube() : m_rot(0.0f) {}
 
@@ -292,8 +366,9 @@ private:
 	RoxScene::mesh m_mesh;
 
 
-	RoxRender::RoxVbo m_vbo;
+	RoxRender::RoxVBO m_vbo;
 	RoxRender::RoxShader m_shader;
+	RoxRender::RoxShader m_shader_dif;
 	float m_rot;
 };
 
@@ -306,7 +381,7 @@ int main(int argc, char** argv)
 	RoxLogger::log() << "Title " << app.getTitle() << "\n";
 	
 	app.startWindowed(100, 100, 640, 480, 0);
-	//RoxLogger::log() << "exit success\n";
+	RoxLogger::log() << "exit success\n";
 
 	return 0;
 }

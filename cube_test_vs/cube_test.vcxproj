@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\CLT\OpenGL\glfw_3.3.9\include;D:\CLT\assimp\include;D:\CLT\SDL\include;%(AdditionalIncludeDirectories);D:\Dev\rox-engine\Engine\RoxCore;D:\Dev\rox-engine\Engine\RoxGraphics</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\CLT\OpenGL\glfw_3.3.9\include;%(AdditionalIncludeDirectories);D:\Dev\rox-engine\Engine\RoxCore;D:\Dev\rox-engine\Engine\RoxGraphics</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
