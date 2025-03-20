@@ -107,7 +107,7 @@ private:
 		//	return;
 		//}
 
-		float vertices_obj[] =
+		float vertices[] =
 		{
 			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
 			-0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
@@ -119,7 +119,7 @@ private:
 			 0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f
 		};
 
-		unsigned short indices_obj[] =
+		unsigned short indices[] =
 		{
 			0,2,1, 1,2,3, // -x
 			4,5,6, 5,7,6, // +x
@@ -129,18 +129,19 @@ private:
 			1,3,7, 1,7,5, // +z
 		};
 
-
 		// Total size of each vertex: 6 floats (3 for position + 3 for color)
-		m_vbo.setVertexData(vertices_obj, sizeof(float) * 6, 8);
+		m_vbo.setVertexData(vertices, sizeof(float) * 6, 8);
 
 		// Position attribute: starts at offset 0, 3 components (x, y, z)
-		m_vbo.setVertices(0, 3);
+		m_vbo.setVertices(sizeof(float)* 0, 3);
 
 		// Color attribute: starts after the position data (offset of 3 * sizeof(float)), 3 components (r, g, b)
 		m_vbo.setColors(sizeof(float) * 3, 3);
 
 		// Set the index data
-		m_vbo.setIndexData(indices_obj, RoxRender::RoxVBO::INDEX_2D,sizeof(indices_obj) / sizeof(unsigned short));
+		m_vbo.setIndexData(indices, RoxRender::RoxVBO::INDEX_2D,sizeof(indices) / sizeof(unsigned short));
+
+		
 
 		if (!getShaders("shaders/v_shader.txt", "shaders/f_shader.txt")) {
 			std::cout << "Failed to load shaders" << std::endl;
@@ -233,7 +234,7 @@ private:
 		m_vbo.bind();
 		//m_vbo.bindVerts();
 		//m_vbo.bindIndices();
-		m_vbo.draw(0, 6);
+		m_vbo.draw();
 		m_vbo.unbind();
 		m_shader.unbind();
 

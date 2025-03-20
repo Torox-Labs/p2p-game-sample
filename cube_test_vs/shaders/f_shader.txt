@@ -1,10 +1,16 @@
 //#version 330 core
 
-in vec4 vertexColor;
-out vec4 FragColor;
+//in vec4 vertexColor;
+//out vec4 FragColor;
+//
+////uniform vec4 outColor;
+//
+//void main(){
+//	FragColor = vertexColor;
+//}
 
-//uniform vec4 outColor;
-
-void main(){
-	FragColor = vertexColor;
+varying vec4 color;
+void main()
+{
+	gl_FragColor=color;
 }
