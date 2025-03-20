@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 #include <RoxApp/RoxApp.h>
 #include <RoxRender/RoxVBO.h>
@@ -13,6 +14,7 @@
 #include <RoxSystem/RoxSystem.h>
 #include <RoxSystem/RoxShadersCacheProvider.h>
 #include <RoxRender/RoxRenderOpengl.h>
+#include <RoxRender/RoxStatistics.h>
 
 class testCube : public RoxApp::RoxApp
 {
@@ -27,6 +29,41 @@ private:
 
 		return true;
 	}
+
+	bool getShaders(const char* vertex_path, const char* fragment_path) {
+
+		std::ifstream vertex_file;
+		std::ifstream fragment_file;
+
+		// Ensure ifstream objects can throw exceptions
+		vertex_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		fragment_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+		try {
+			// Open files
+			vertex_file.open(vertex_path);
+			fragment_file.open(fragment_path);
+			std::stringstream vertex_stream, fragment_stream;
+
+			// Read file's buffer contents into streams
+			vertex_stream << vertex_file.rdbuf();
+			fragment_stream << fragment_file.rdbuf();
+
+			// Close file handlers
+			vertex_file.close();
+			fragment_file.close();
+
+			// Convert stream into string
+			m_vertex_code = vertex_stream.str();
+			m_fragment_code = fragment_stream.str();
+		}
+		catch (std::ifstream::failure err) {
+			return false;
+		}
+
+		return true;
+	}
+
 
 	void testFileReading(const char* path)
 	{
@@ -70,22 +107,31 @@ private:
 		//	return;
 		//}
 
-		float vertices[] =
+		float vertices_obj[] =
 		{
-			-0.5f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f, // Top Left
-			-0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, // Bottom Left
-			0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f, // Bottom Right
-			0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f  // Top Right
+			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+			-0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+			-0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			-0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+			 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+			 0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 1.0f,
+			 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f,
+			 0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f
 		};
 
-		unsigned short indices[] =
+		unsigned short indices_obj[] =
 		{
-			0, 1, 2, // First Triangle
-			0, 2, 3  // Second Triangle
+			0,2,1, 1,2,3, // -x
+			4,5,6, 5,7,6, // +x
+			0,1,5, 0,5,4, // -y
+			2,6,7, 2,7,3, // +y
+			0,4,6, 0,6,2, // -z
+			1,3,7, 1,7,5, // +z
 		};
+
 
 		// Total size of each vertex: 6 floats (3 for position + 3 for color)
-		m_vbo.setVertexData(vertices, sizeof(float) * 6, 4);
+		m_vbo.setVertexData(vertices_obj, sizeof(float) * 6, 8);
 
 		// Position attribute: starts at offset 0, 3 components (x, y, z)
 		m_vbo.setVertices(0, 3);
@@ -94,37 +140,12 @@ private:
 		m_vbo.setColors(sizeof(float) * 3, 3);
 
 		// Set the index data
-		m_vbo.setIndexData(indices, RoxRender::RoxVBO::INDEX_2D,sizeof(indices) / sizeof(unsigned short));
+		m_vbo.setIndexData(indices_obj, RoxRender::RoxVBO::INDEX_2D,sizeof(indices_obj) / sizeof(unsigned short));
 
-		const char* vs_code = 
-			R"(//#version 330 core	
-				layout (location = 0) in vec3 aPos;
-				layout (location = 1) in vec3 aColor;
-
-				uniform mat4 _rox_ModelViewProjectionMatrix;
-
-				out vec4 vertexColor;										
-				//out vec4 vertexPosition;
-				void main(){
-					//vertexColor = vec4(aColor.xyz, 1.0);
-					vertexColor = vec4(1.0, 1.0, 0.0, 1.0);
-					//vertexPosition = _rox_ModelViewProjectionMatrix * vec4(aPos.xyz, 1.0);
-					gl_Position = _rox_ModelViewProjectionMatrix * vec4(aPos.xyz, 1.0);
-				}
-			)";
-
-		const char* ft_code =
-			R"(//#version 330 core
-
-				in vec4 vertexColor;
-				out vec4 FragColor;
-				
-				//uniform vec4 outColor;
-
-				void main(){
-					FragColor = vertexColor;
-				}			
-			)";
+		if (!getShaders("shaders/v_shader.txt", "shaders/f_shader.txt")) {
+			std::cout << "Failed to load shaders" << std::endl;
+			return;
+		}
 
 		RoxRender::RoxCompiledShader shader;
 		RoxSystem::RoxShaderCacheProvider shader_cache_provider;
@@ -133,24 +154,23 @@ private:
 		shader_cache_provider.setSavePath(RoxSystem::getAppPath());
 
 		// Combined Both Shaders Text for saving
-		size_t vs_length = strlen(vs_code);
-		size_t ft_length = strlen(ft_code);
+		size_t vs_length = strlen(m_vertex_code.c_str());
+		size_t ft_length = strlen(m_fragment_code.c_str());
 		size_t total_length = vs_length + ft_length + 1; // +1 for the null terminator
 		
 		char* combined = new char[total_length];
-		strcpy_s(combined, total_length, vs_code);
-		strcat_s(combined, total_length, ft_code);
+		strcpy_s(combined, total_length, m_vertex_code.c_str());
+		strcat_s(combined, total_length, m_fragment_code.c_str());
 
 
 		bool shader_exist = shader_cache_provider.get(combined, shader);
 		std::cout << "Shader Exist: " << (shader_exist ? "true" : "false") << "\n";
-
 		
 		if (!shader_exist)
 		{
 			RoxRender::RoxShader::setBinaryShaderCachingEnabled(true);
-			m_shader.addProgram(RoxRender::RoxShader::VERTEX, vs_code);
-			m_shader.addProgram(RoxRender::RoxShader::PIXEL, ft_code);
+			m_shader.addProgram(RoxRender::RoxShader::VERTEX, m_vertex_code.c_str());
+			m_shader.addProgram(RoxRender::RoxShader::PIXEL, m_fragment_code.c_str());
 
 			
 			if (m_shader.getProgramBinaryShader(shader))
@@ -164,7 +184,7 @@ private:
 			if (shader_cache_provider.get(combined, shader))
 			{
 				std::cout << "Load binary data to disk\n";
-				if (!m_shader.setProgramBinaryShader(vs_code, ft_code, shader))
+				if (!m_shader.setProgramBinaryShader(m_vertex_code.c_str(), m_fragment_code.c_str(), shader))
 					std::cout << "Error loading binary data";
 			}
 			
@@ -184,7 +204,7 @@ private:
 		std::cout << "x:" << viewportInfo.x << " y: " << viewportInfo.y << " width: " << viewportInfo.width << " height: " << viewportInfo.height << "\n";
 		std::cout << "App Path: " << RoxSystem::getAppPath()<< std::endl;
 		std::cout << "User Path: " << RoxSystem::getUserPath() << std::endl;
-
+		std::cout << "Statistics state: " << RoxRender::Statistics::enabled() << "\n";
 	}
 
 	void onFrame(unsigned int dt) override
@@ -204,13 +224,16 @@ private:
 		m_camera.set_rot(m_rotate_x, m_rotate_y, m_rotate_z);
 		//RoxRender::setModelviewMatrix(m_camera.get_view_matrix());
 
+		//RoxRender::setModelViewMatrix(mv);
 		RoxRender::setModelViewMatrix(mv);
 
 		//RoxRender::setCamera(m_camera.get_view_matrix());
 
 		m_shader.bind();
 		m_vbo.bind();
-		m_vbo.draw();
+		//m_vbo.bindVerts();
+		//m_vbo.bindIndices();
+		m_vbo.draw(0, 6);
 		m_vbo.unbind();
 		m_shader.unbind();
 
@@ -370,6 +393,9 @@ private:
 	RoxRender::RoxShader m_shader;
 	RoxRender::RoxShader m_shader_dif;
 	float m_rot;
+
+	std::string m_vertex_code;
+	std::string m_fragment_code;
 };
 
 
