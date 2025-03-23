@@ -30,4 +30,17 @@
       <Filter>Shaders</Filter>
     </CopyFileToFolders>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\wall.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\wall.tga">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>

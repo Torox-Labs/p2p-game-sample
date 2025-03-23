@@ -1,16 +1,13 @@
-//#version 330 core
+in vec4 outColor;
+in vec2 outTexCoord;
 
-//in vec4 vertexColor;
-//out vec4 FragColor;
-//
-////uniform vec4 outColor;
-//
-//void main(){
-//	FragColor = vertexColor;
-//}
+out vec4 FragColor;
 
-varying vec4 color;
-void main()
-{
-	gl_FragColor=color;
+//uniform vec4 outColor;
+uniform sampler2D ourTex;
+
+void main(){
+	
+	FragColor = texture(ourTex, outTexCoord);
+	//FragColor = outColor;
 }
