@@ -130,41 +130,85 @@ private:
 
 		float vertices[] =
 		{
-			// Position          // Colors           // Texture 
-			// Front face
-			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
-			-0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,   0.0f, 1.0f,
-			-0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
-			-0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-			 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,   1.0f, 0.0f,
-			 0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 1.0f,   1.0f, 1.0f,
-			 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f,   0.0f, 0.0f,
-			 0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+			// Position           // Colors           // Normals          // Texture 
+			// Front face (+z)
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f,   1.0f, 0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 1.0f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f,
+													  					 
+			// Back face (-z)						  					 
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,   0.0f, 0.0f, -1.0f,  1.0f, 0.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,   0.0f, 0.0f, -1.0f,  0.0f, 0.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,   0.0f, 0.0f, -1.0f,  0.0f, 1.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   0.0f, 0.0f, -1.0f,  1.0f, 1.0f,
+													  					 
+			// Left face (-x)						  					 
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,   -1.0f, 0.0f, 0.0f,  0.0f, 0.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  1.0f, 0.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   -1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
+													  					 
+			// Right face (+x)						  					 
+			 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 1.0f,   1.0f, 0.0f, 0.0f,   0.0f, 1.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,
+													  					 
+			 // Bottom face (-y)					  					 
+			 -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,   0.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+			  0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,   0.0f, -1.0f, 0.0f,  1.0f, 0.0f,
+			  0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,   0.0f, -1.0f, 0.0f,  1.0f, 1.0f,
+			 -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,   0.0f, -1.0f, 0.0f,  0.0f, 1.0f,
+													  					 
+			 // Top face (+y)						  					 
+			 -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
+			  0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f,
+			  0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
+			 -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f
 		};
 
+		// Update the indices to match the new vertices
 		unsigned short indices[] =
 		{
-			0,2,1, 1,2,3, // -x
-			4,5,6, 5,7,6, // +x
-			0,1,5, 0,5,4, // -y
-			2,6,7, 2,7,3, // +y
-			0,4,6, 0,6,2, // -z
-			1,3,7, 1,7,5, // +z
+			// Front face
+			0, 1, 2,
+			0, 2, 3,
+			// Back face
+			4, 5, 6,
+			4, 6, 7,
+			// Left face
+			8, 9, 10,
+			8, 10, 11,
+			// Right face
+			12, 13, 14,
+			12, 14, 15,
+			// Bottom face
+			16, 17, 18,
+			16, 18, 19,
+			// Top face
+			20, 21, 22,
+			20, 22, 23
 		};
 
-		// Total size of each vertex: 6 floats (3 for position + 3 for color)
-		m_vbo.setVertexData(vertices, sizeof(float) * 8, 8);
+		// Update the vertex stride - now each vertex has 11 floats (3 position + 3 color + 3 normal + 2 texture)
+		m_vbo.setVertexData(vertices, sizeof(float) * 11, 24);
 
-		// Position attribute: starts at offset 0, 3 components (x, y, z)
+		// Position attribute
 		m_vbo.setVertices(sizeof(float) * 0, 3);
-		
-		m_vbo.setTexCoord(0, sizeof(float) * 6, 2);
 
-		// Color attribute: starts after the position data (offset of 3 * sizeof(float)), 3 components (r, g, b)
+		// Color attribute 
 		m_vbo.setColors(sizeof(float) * 3, 3);
 
+		// Normal attribute (add this)
+		m_vbo.setNormals(sizeof(float) * 6, RoxRender::RoxVBO::FLOAT_32);
+
+		// Texture attribute
+		m_vbo.setTexCoord(0, sizeof(float) * 9, 2);
+
 		// Set the index data
-		m_vbo.setIndexData(indices, RoxRender::RoxVBO::INDEX_2D,sizeof(indices) / sizeof(unsigned short));
+		m_vbo.setIndexData(indices, RoxRender::RoxVBO::INDEX_2D, sizeof(indices) / sizeof(unsigned short));
+
 
 		if (!getShaders("shaders/v_shader.txt", "shaders/f_shader.txt")) {
 			std::cout << "Failed to load shaders" << std::endl;
@@ -303,6 +347,45 @@ private:
 		////////////////////////////
 
 		///////////// -- Set Uniforms -- ////////////////
+		std::cout << "============= Set Uniforms Data ===============\n";
+
+		// After successfully loading and compiling the shaders
+		int lightPosUniform = m_shader.findUniform("lightPos");
+		if (lightPosUniform >= 0) {
+			m_shader.setUniform(lightPosUniform, 1.0f, 1.0f, 2.0f);
+			std::cout << "lightPos uniform found at index " << lightPosUniform << std::endl;
+		}
+		else {
+			std::cout << "lightPos uniform not found!" << std::endl;
+		}
+
+		int lightColorUniform = m_shader.findUniform("lightColor");
+		if (lightColorUniform >= 0){ 
+			m_shader.setUniform(lightColorUniform, 1.0f, 1.0f, 1.0f);
+			std::cout << "lightColor uniform found at index " << lightColorUniform << std::endl;
+		}
+		else {
+			std::cout << "lightColor uniform not found!" << std::endl;
+		}
+		
+		int ambientStrengthUniform = m_shader.findUniform("ambientStrength");
+		if (ambientStrengthUniform >= 0){
+			m_shader.setUniform(ambientStrengthUniform, 0.2f);
+			std::cout << "ambientStrength uniform found at index " << ambientStrengthUniform << std::endl;
+		}
+		else {
+			std::cout << "ambientStrength uniform not found!" << std::endl;
+		}
+
+		std::cout << "============= Uniforms list ===============\n";
+
+		int uniform_count = m_shader.getUniformsCount();
+		std::cout << "Found " << uniform_count << " uniforms:" << std::endl;
+		for (int i = 0; i < uniform_count; ++i) {
+			std::string name = m_shader.getUniformName(i);
+			int type = m_shader.getUniformType(i);
+			std::cout << "  Uniform " << i << ": name: " << name << ", type: " << type << std::endl;
+		}
 
 		//m_shader.setUniform(0, 1.0f, 0.0f, 0.0f, 1.0f);
 		//int uniform_count = m_shader.getUniformsCount();
@@ -345,16 +428,30 @@ private:
 		mv.rotate(30.0f, 1.0f, 0.0f, 0.0f);
 		mv.rotate(m_rot, 0.0f, 1.0f, 0.0f);
 		
-		m_camera.set_pos(m_move_x, m_move_y, m_move_z);
-		m_camera.set_rot(m_rotate_x, m_rotate_y, m_rotate_z);
+		m_camera.set_pos(mv.get_pos());
+		m_camera.set_rot(mv.get_rot());
+		
+		//m_camera.set_pos(m_move_x, m_move_y, m_move_z);
+		//m_camera.set_rot(m_rotate_x, m_rotate_y, m_rotate_z);
 		//RoxRender::setModelviewMatrix(m_camera.get_view_matrix());
 
-		//RoxRender::setModelViewMatrix(mv);
 		RoxRender::setModelViewMatrix(mv);
+		//RoxRender::setProjectionMatrix(mv);
+		//RoxRender::setModelViewMatrix(m_camera.get_view_matrix());
 
 		//RoxRender::setCamera(m_camera.get_view_matrix());
+		// Make light move in a circle
+		float lightX = sin(m_rot * 0.01f) * 2.0f;
+		float lightZ = cos(m_rot * 0.01f) * 2.0f;
 
 		m_shader.bind();
+
+		// Update light position
+		int lightPosUniform = m_shader.findUniform("lightPos");
+		if (lightPosUniform >= 0) {
+			m_shader.setUniform(lightPosUniform, lightX, 1.0f, lightZ);
+		}
+
 		m_vbo.bind();
 		m_texture.bind(0);
 		m_vbo.draw();
@@ -403,8 +500,9 @@ private:
 	{
 		RoxLogger::log() << "key " << key << " " << pressed << "\n";
 
-		if ((key == ::RoxInput::KEY_BACK || key == ::RoxInput::KEY_ESCAPE) && !pressed)
+		if ((key == ::RoxInput::KEY_BACK || key == ::RoxInput::KEY_ESCAPE) && pressed) {
 			finish();
+		}
 
 		if(key == ::RoxInput::KEY_W && pressed)
 		{
