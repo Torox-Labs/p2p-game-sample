@@ -29,6 +29,9 @@
     <CopyFileToFolders Include="shaders\v_shader.txt">
       <Filter>Shaders</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="resources\cube.nms">
+      <Filter>Resource Files</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\wall.jpg">

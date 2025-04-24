@@ -4,24 +4,30 @@
 
 
 #include <RoxApp/RoxApp.h>
+
+
+#include <RoxSystem/RoxSystem.h>
+#include <RoxSystem/RoxShadersCacheProvider.h>
+
+#include <RoxLogger/RoxLogger.h>
+#include <RoxInput/RoxInput.h>
+
+#include <RoxScene/location.h>
+#include <RoxScene/camera.h>
+#include <RoxScene/mesh.h>
+#include <RoxScene/texture.h>
+
 #include <RoxRender/RoxVBO.h>
 #include <RoxRender/RoxTexture.h>
 #include <RoxRender/RoxShader.h>
 #include <RoxRender/RoxRender.h>
-#include <RoxLogger/RoxLogger.h>
-#include <RoxInput/RoxInput.h>
-#include <RoxScene/location.h>
-#include <RoxScene/camera.h>
-#include <RoxScene/mesh.h>
-#include <RoxSystem/RoxSystem.h>
-#include <RoxSystem/RoxShadersCacheProvider.h>
-#include <RoxRender/RoxRenderOpengl.h>
 #include <RoxRender/RoxStatistics.h>
+#include <RoxRender/RoxDebugDraw.h>
 
 #include <RoxFormats/RoxTruevisionGraphicsAdapter.h>
 #include <RoxFormats/RoxDirectDrawSurface.h>
+#include <RoxFormats/RoxMesh.h>
 
-#include <RoxScene/texture.h>
 
 class testCube : public RoxApp::RoxApp
 {
@@ -101,18 +107,44 @@ private:
 		RoxRender::setClearDepth(1.0f);
 		RoxRender::DepthTest::enable(RoxRender::DepthTest::LESS);
 
-		RoxScene::mesh::register_load_function(RoxScene::mesh::load_nms);
+		
 
-		//testFileReading("D:/Dev/rox-engine-build/x64/Debug/new.nms");
-
-
-		//bool boolValue = m_mesh.load("D:/Dev/rox-engine-build/x64/Debug/new.nms");
-		//if (!boolValue)
+		//RoxScene::mesh::register_load_function(RoxScene::mesh::load_nms);
+		//RoxScene::mesh::set_resources_prefix("resources/");
+		//m_mesh.load("cube.nms");
+		//if (!m_mesh.internal().get_shared_data().isValid())
 		//{
 		//	// Handle loading error
 		//	std::cerr << "Failed to load NMS mesh file." << std::endl;
 		//	return;
 		//}
+
+		RoxFormats::Mesh mesh_data;
+		std::ifstream file("D:/Dev/p2p-game-sample/cube_test_vs/resources/cube.nms", std::ios::binary | std::ios::ate);
+		if (!file) { 
+			/* handle error */ 
+			std::cout << "Error reading file\n";
+		}
+		std::streamsize size = file.tellg();
+		file.seekg(0, std::ios::beg);
+		std::vector<char> buffer(size);
+		if (!file.read(buffer.data(), size)) { 
+			/* handle error */
+			std::cout << "Error reading data\n";
+		}
+		if (!mesh_data.readChunksInfo(buffer.data(), buffer.size())) { 
+			/* handle error */ 
+			std::cout << "Error Reading Chunk Info\n";
+		}
+		// Now use mesh_data to create your mesh
+
+		//RoxScene::mesh myMesh("resources/cube.nms");
+		//if (!myMesh.internal().get_shared_data().isValid()) {
+		//	// Handle error
+		//	std::cerr << "Failed to load NMS mesh file." << std::endl;
+		//}
+
+		//std::cout << "Mesh Name" << myMesh.get_name() << "\n";
 
 		const float vertices_Rec[36] = {
 			// Position			 // Color				 // Texture
@@ -413,6 +445,19 @@ private:
 		//std::cout << "App Path: " << RoxSystem::getAppPath()<< std::endl;
 		//std::cout << "User Path: " << RoxSystem::getUserPath() << std::endl;
 		//std::cout << "Statistics state: " << RoxRender::Statistics::enabled() << "\n";
+	
+		///////////// -- Set Debugging -- ////////////////
+		RoxMath::Vector3 line_start = RoxMath::Vector3(0, 0, 0);
+		RoxMath::Vector3 line_end = RoxMath::Vector3(1, 1, 1);
+		m_debug_draw.addLine(line_start, line_end, RoxMath::Vector4(1, 0, 0, 1));
+		m_debug_draw.addTri(RoxMath::Vector3(-0.5f, -0.5f, 0.5f), RoxMath::Vector3(0.5f, -0.5f, 0.5f)
+			, RoxMath::Vector3(0.5f, 0.5f, 0.5f), RoxMath::Vector4(1, 0, 0, 1));
+
+		m_debug_draw.addQuad(RoxMath::Vector3(-1, -1, 1), RoxMath::Vector3(1, -1, 1)
+			, RoxMath::Vector3(1, 1, 1), RoxMath::Vector3(-1, 1, 1) , RoxMath::Vector4(1, 0, 0, 0.5f));
+		//m_debug_draw.addPoint(RoxMath::Vector3(0.5f, 0.5f, 0.5f));
+		//m_debug_draw.setPointSize(0.5f);
+
 	}
 
 	void onFrame(unsigned int dt) override
@@ -455,6 +500,7 @@ private:
 		m_vbo.bind();
 		m_texture.bind(0);
 		m_vbo.draw();
+		m_debug_draw.draw();
 		m_texture.unbind(0);
 		m_vbo.unbind();
 		m_shader.unbind();
@@ -613,6 +659,7 @@ private:
 
 
 	RoxRender::RoxVBO m_vbo;
+	RoxRender::RoxDebugDraw m_debug_draw;
 	RoxRender::RoxTexture m_texture;
 	RoxRender::RoxShader m_shader;
 	float m_rot;
