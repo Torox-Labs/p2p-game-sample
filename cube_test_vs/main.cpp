@@ -78,7 +78,7 @@ private:
 	}
 
 
-	void testFileReading(const char* path)
+	bool testFileReading(const char* path)
 	{
 		FILE* file = nullptr;
 		fopen_s(&file, path, "rb");
@@ -86,16 +86,54 @@ private:
 		if (!file)
 		{
 			std::cerr << "Failed to open file: " << path << std::endl;
-			return;
+			return false;
 		}
 
 		fseek(file, 0, SEEK_END);
-		size_t fileSize = ftell(file);
+		size_t file_size = ftell(file);
 		fseek(file, 0, SEEK_SET);
 
-		std::cout << "File size: " << fileSize << " bytes." << std::endl;
+		std::cout << "File size: " << file_size << " bytes." << std::endl;
 
+		// Read file into buffer
+		std::vector<char> buffer(file_size);
+		size_t read_size = fread(buffer.data(), 1, file_size, file);
 		fclose(file);
+
+		if (read_size != file_size) {
+			std::cerr << "Error: Read only " << read_size << " of " << file_size << " bytes" << std::endl;
+			return false;
+		}
+
+		// Check file signature
+		if (file_size < 8 || memcmp(buffer.data(), "nya mesh", 8) != 0) {
+			std::cerr << "Not a valid NMS file (missing 'nya mesh' signature)" << std::endl;
+			return false;
+		}
+
+		// Parse the mesh using readChunksInfo
+		RoxFormats::nms mesh;
+		bool success = mesh.read_chunks_info(buffer.data(), file_size);
+
+		if (!success)
+		{
+			std::cerr << "Failed to parse mesh" << std::endl;
+			return false;
+		}
+
+		// Print detailed mesh info for debugging
+		std::cout << "Mesh loaded successfully!" << std::endl;
+		std::cout << "Version: " << mesh.version << std::endl;
+		std::cout << "Chunks: " << mesh.chunks.size() << std::endl;
+
+		for (size_t i = 0; i < mesh.chunks.size(); i++) {
+			auto& chunk = mesh.chunks[i];
+			std::cout << "Chunk " << i << ":" << std::endl;
+			std::cout << "  Type: " << chunk.type << std::endl;
+			std::cout << "  Size: " << chunk.size << std::endl;
+		}
+
+		return true;
 	}
 
 	void onInit() override
@@ -107,7 +145,23 @@ private:
 		RoxRender::setClearDepth(1.0f);
 		RoxRender::DepthTest::enable(RoxRender::DepthTest::LESS);
 
+		RoxResources::setResourcesPath("D:/Dev/p2p-game-sample/cube_test_vs/resources/");
 		
+		RoxScene::mesh::register_load_function(RoxScene::mesh::load_nms);
+		//RoxScene::mesh::set_resources_prefix("D:/Dev/p2p-game-sample/cube_test_vs/resources/");
+		if (!m_mesh.load("sniper.nms"))
+		{
+			// Handle loading error
+			std::cerr << "Failed to load NMS mesh file." << std::endl;
+			return;
+		}
+
+
+		// Load .nms file to the RoxMesh from the Format Module
+		if (!testFileReading("resources/sniper.nms")) {
+			std::cerr << "Falied to load .nms\n";
+			return;
+		}
 
 		//RoxScene::mesh::register_load_function(RoxScene::mesh::load_nms);
 		//RoxScene::mesh::set_resources_prefix("resources/");
@@ -119,23 +173,25 @@ private:
 		//	return;
 		//}
 
-		RoxFormats::Mesh mesh_data;
-		std::ifstream file("D:/Dev/p2p-game-sample/cube_test_vs/resources/cube.nms", std::ios::binary | std::ios::ate);
-		if (!file) { 
-			/* handle error */ 
-			std::cout << "Error reading file\n";
-		}
-		std::streamsize size = file.tellg();
-		file.seekg(0, std::ios::beg);
-		std::vector<char> buffer(size);
-		if (!file.read(buffer.data(), size)) { 
-			/* handle error */
-			std::cout << "Error reading data\n";
-		}
-		if (!mesh_data.readChunksInfo(buffer.data(), buffer.size())) { 
-			/* handle error */ 
-			std::cout << "Error Reading Chunk Info\n";
-		}
+
+		//RoxFormats::nms mesh_data;
+		//std::ifstream file("resources/cube_2.nms", std::ios::binary | std::ios::ate);
+		//if (!file) { 
+		//	/* handle error */ 
+		//	std::cout << "Error reading file\n";
+		//}
+
+		//std::streamsize size = file.tellg();
+		//file.seekg(0, std::ios::beg);
+		//std::vector<char> buffer(size);
+		//if (!file.read(buffer.data(), size)) { 
+		//	/* handle error */
+		//	std::cout << "Error reading data\n";
+		//}
+		//if (!mesh_data.readChunksInfo(buffer.data(), buffer.size())) { 
+		//	/* handle error */ 
+		//	std::cout << "Error Reading Chunk Info\n";
+		//}
 		// Now use mesh_data to create your mesh
 
 		//RoxScene::mesh myMesh("resources/cube.nms");
@@ -291,7 +347,7 @@ private:
 		////---- Load TGA
 		// Create a shared texture resrouce from a TGA file
 		RoxFormats::TgaFile tgaFile;
-		if (!tgaFile.load("resources/wall.tga")) {
+		if (!tgaFile.load("wall.tga")) {
 			std::cerr << "Failed to load texture!\n";
 			return;
 		}
@@ -498,11 +554,12 @@ private:
 		}
 
 		m_vbo.bind();
-		m_texture.bind(0);
-		m_vbo.draw();
-		m_debug_draw.draw();
-		m_texture.unbind(0);
-		m_vbo.unbind();
+		//m_texture.bind(0);
+		//m_vbo.draw();
+		//m_debug_draw.draw();
+		m_mesh.draw();
+		//m_texture.unbind(0);
+		//m_vbo.unbind();
 		m_shader.unbind();
 
 		//m_mesh.draw();
@@ -657,6 +714,7 @@ private:
 	RoxScene::camera m_camera;
 	RoxScene::mesh m_mesh;
 
+	RoxFormats::nms MyMesh;
 
 	RoxRender::RoxVBO m_vbo;
 	RoxRender::RoxDebugDraw m_debug_draw;
