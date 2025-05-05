@@ -158,10 +158,10 @@ private:
 
 
 		// Load .nms file to the RoxMesh from the Format Module
-		if (!testFileReading("resources/sniper.nms")) {
-			std::cerr << "Falied to load .nms\n";
-			return;
-		}
+		//if (!testFileReading("resources/sniper.nms")) {
+		//	std::cerr << "Falied to load .nms\n";
+		//	return;
+		//}
 
 		//RoxScene::mesh::register_load_function(RoxScene::mesh::load_nms);
 		//RoxScene::mesh::set_resources_prefix("resources/");
@@ -298,10 +298,11 @@ private:
 		m_vbo.setIndexData(indices, RoxRender::RoxVBO::INDEX_2D, sizeof(indices) / sizeof(unsigned short));
 
 
-		if (!getShaders("shaders/v_shader.txt", "shaders/f_shader.txt")) {
-			std::cout << "Failed to load shaders" << std::endl;
-			return;
-		}
+		//if(false)
+			if (!getShaders("shaders/v_shader.txt", "shaders/f_shader.txt")) {
+				std::cout << "Failed to load shaders" << std::endl;
+				return;
+			}
 
 		///////////// -- Load Texture -- ////////////////
 
@@ -542,18 +543,18 @@ private:
 
 		//RoxRender::setCamera(m_camera.get_view_matrix());
 		// Make light move in a circle
-		float lightX = sin(m_rot * 0.01f) * 2.0f;
-		float lightZ = cos(m_rot * 0.01f) * 2.0f;
+		//float lightX = sin(m_rot * 0.01f) * 2.0f;
+		//float lightZ = cos(m_rot * 0.01f) * 2.0f;
 
-		m_shader.bind();
 
 		// Update light position
-		int lightPosUniform = m_shader.findUniform("lightPos");
-		if (lightPosUniform >= 0) {
-			m_shader.setUniform(lightPosUniform, lightX, 1.0f, lightZ);
-		}
+		//int lightPosUniform = m_shader.findUniform("lightPos");
+		//if (lightPosUniform >= 0) {
+		//	m_shader.setUniform(lightPosUniform, lightX, 1.0f, lightZ);
+		//}
 
-		m_vbo.bind();
+		m_shader.bind();
+		//m_vbo.bind();
 		//m_texture.bind(0);
 		//m_vbo.draw();
 		//m_debug_draw.draw();
