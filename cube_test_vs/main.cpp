@@ -156,51 +156,7 @@ private:
 			return;
 		}
 
-
-		// Load .nms file to the RoxMesh from the Format Module
-		//if (!testFileReading("resources/sniper.nms")) {
-		//	std::cerr << "Falied to load .nms\n";
-		//	return;
-		//}
-
-		//RoxScene::mesh::register_load_function(RoxScene::mesh::load_nms);
-		//RoxScene::mesh::set_resources_prefix("resources/");
-		//m_mesh.load("cube.nms");
-		//if (!m_mesh.internal().get_shared_data().isValid())
-		//{
-		//	// Handle loading error
-		//	std::cerr << "Failed to load NMS mesh file." << std::endl;
-		//	return;
-		//}
-
-
-		//RoxFormats::nms mesh_data;
-		//std::ifstream file("resources/cube_2.nms", std::ios::binary | std::ios::ate);
-		//if (!file) { 
-		//	/* handle error */ 
-		//	std::cout << "Error reading file\n";
-		//}
-
-		//std::streamsize size = file.tellg();
-		//file.seekg(0, std::ios::beg);
-		//std::vector<char> buffer(size);
-		//if (!file.read(buffer.data(), size)) { 
-		//	/* handle error */
-		//	std::cout << "Error reading data\n";
-		//}
-		//if (!mesh_data.readChunksInfo(buffer.data(), buffer.size())) { 
-		//	/* handle error */ 
-		//	std::cout << "Error Reading Chunk Info\n";
-		//}
-		// Now use mesh_data to create your mesh
-
-		//RoxScene::mesh myMesh("resources/cube.nms");
-		//if (!myMesh.internal().get_shared_data().isValid()) {
-		//	// Handle error
-		//	std::cerr << "Failed to load NMS mesh file." << std::endl;
-		//}
-
-		//std::cout << "Mesh Name" << myMesh.get_name() << "\n";
+		return;
 
 		const float vertices_Rec[36] = {
 			// Position			 // Color				 // Texture
@@ -338,8 +294,6 @@ private:
 		m_shader.bind();
 		m_mesh.draw();
 		m_shader.unbind();
-
-		//m_mesh.draw();
 
 		static unsigned int fps_counter = 0, fps_update_timer = 0;
 		++fps_counter;
