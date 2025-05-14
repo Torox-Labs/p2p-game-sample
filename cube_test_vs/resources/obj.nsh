@@ -1,20 +1,28 @@
 @sampler base_map "map_Kd"
 
 @all
-//varying vec4 outColor;
 
 @vertex
 
+out vec2 outTexCoord;
+out vec4 outColor;
+
 void main()
 {
-    //outColor = vec4(0.5, 0.5, 0, 1.0);
-    gl_Position= rox_ModelViewProjectionMatrix * rox_Vertex;
+    outColor = rox_Vertex;
+    outTexCoord = rox_MultiTexCoord.xy;
+	gl_Position = rox_ModelViewMatrix * rox_Vertex * 0.2f;
 }
 
 @fragment
 varying vec4 FragColor;
 
+in vec2 outTexCoord;
+in vec4 outColor;
+
+uniform sampler2D base_map;
+
 void main()
 {
-    FragColor = vec4(0.5, 0.5, 0, 1.0);
+    FragColor = texture2D(base_map, outTexCoord);
 }
