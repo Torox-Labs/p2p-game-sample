@@ -1,0 +1,8 @@
+out vec4 outColor;										
+out vec2 outTexCoord;
+
+void main(){
+	outColor = rox_Color;
+	outTexCoord = rox_MultiTexCoord.xy;
+	gl_Position = rox_ModelViewProjectionMatrix * rox_Vertex;
+}
