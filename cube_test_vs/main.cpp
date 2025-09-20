@@ -148,128 +148,11 @@ private:
 		RoxResources::setResourcesPath("D:/Dev/p2p-game-sample/cube_test_vs/resources/");
 		
 		RoxScene::mesh::register_load_function(RoxScene::mesh::load_nms);
-		//RoxScene::mesh::set_resources_prefix("D:/Dev/p2p-game-sample/cube_test_vs/resources/");
-		if (!m_mesh.load("sniper.nms"))
+		if (!m_mesh.load("cottage_obj.nms"))
 		{
-			// Handle loading error
 			std::cerr << "Failed to load NMS mesh file." << std::endl;
 			return;
 		}
-
-		return;
-
-		const float vertices_Rec[36] = {
-			// Position			 // Color				 // Texture
-			-1, -1, 0.0f,  1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, // 0. bottom left
-			1, -1,  0.0f,  0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, // 1. bottom right
-			-1, 1,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, // 2. top left
-			1, 1,   0.0f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // 3. top right
-		};
-
-
-		unsigned short indices_Rec[6] = {
-		0, 1, 2,
-		1, 3, 2,
-		};
-
-		float vertices[] =
-		{
-			// Position           // Colors           // Normals          // Texture 
-			// Front face (+z)
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
-			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f,   1.0f, 0.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 1.0f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f,
-			-0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f,
-													  					 
-			// Back face (-z)						  					 
-			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,   0.0f, 0.0f, -1.0f,  1.0f, 0.0f,
-			 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,   0.0f, 0.0f, -1.0f,  0.0f, 0.0f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,   0.0f, 0.0f, -1.0f,  0.0f, 1.0f,
-			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   0.0f, 0.0f, -1.0f,  1.0f, 1.0f,
-													  					 
-			// Left face (-x)						  					 
-			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,   -1.0f, 0.0f, 0.0f,  0.0f, 0.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  1.0f, 0.0f,
-			-0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   -1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-													  					 
-			// Right face (+x)						  					 
-			 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,
-			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 1.0f,   1.0f, 0.0f, 0.0f,   0.0f, 1.0f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,
-													  					 
-			 // Bottom face (-y)					  					 
-			 -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,   0.0f, -1.0f, 0.0f,  0.0f, 0.0f,
-			  0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,   0.0f, -1.0f, 0.0f,  1.0f, 0.0f,
-			  0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,   0.0f, -1.0f, 0.0f,  1.0f, 1.0f,
-			 -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,   0.0f, -1.0f, 0.0f,  0.0f, 1.0f,
-													  					 
-			 // Top face (+y)						  					 
-			 -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
-			  0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f,
-			  0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
-			 -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f
-		};
-
-		// Update the indices to match the new vertices
-		unsigned short indices[] =
-		{
-			// Front face
-			0, 1, 2,
-			0, 2, 3,
-			// Back face
-			4, 5, 6,
-			4, 6, 7,
-			// Left face
-			8, 9, 10,
-			8, 10, 11,
-			// Right face
-			12, 13, 14,
-			12, 14, 15,
-			// Bottom face
-			16, 17, 18,
-			16, 18, 19,
-			// Top face
-			20, 21, 22,
-			20, 22, 23
-		};
-
-		// Update the vertex stride - now each vertex has 11 floats (3 position + 3 color + 3 normal + 2 texture)
-		m_vbo.setVertexData(vertices, sizeof(float) * 11, 24);
-
-		// Position attribute
-		m_vbo.setVertices(sizeof(float) * 0, 3);
-
-		// Color attribute 
-		m_vbo.setColors(sizeof(float) * 3, 3);
-
-		// Normal attribute (add this)
-		m_vbo.setNormals(sizeof(float) * 6, RoxRender::RoxVBO::FLOAT_32);
-
-		// Texture attribute
-		m_vbo.setTexCoord(0, sizeof(float) * 9, 2);
-
-		// Set the index data
-		m_vbo.setIndexData(indices, RoxRender::RoxVBO::INDEX_2D, sizeof(indices) / sizeof(unsigned short));
-
-
-		//if(false)
-			if (!getShaders("shaders/v_shader.txt", "shaders/f_shader.txt")) {
-				std::cout << "Failed to load shaders" << std::endl;
-				return;
-			}
-
-		///////////// -- Load Shaders -- ////////////////
-		RoxRender::RoxShader::setBinaryShaderCachingEnabled(false);
-		m_shader.addProgram(RoxRender::RoxShader::VERTEX, m_vertex_code.c_str());
-		if(!m_shader.addProgram(RoxRender::RoxShader::PIXEL, m_fragment_code.c_str()))
-		{
-			std::cout << "Error Compiling Shaders Shader\n";
-			return;
-		}
-		////////////////////////////
-
 	}
 
 	void onFrame(unsigned int dt) override
@@ -285,11 +168,7 @@ private:
 		mv.rotate(30.0f, 1.0f, 0.0f, 0.0f);
 		mv.rotate(m_rot, 0.0f, 1.0f, 0.0f);
 		
-		m_camera.set_pos(mv.get_pos());
-		m_camera.set_rot(mv.get_rot());
-		
 		RoxRender::setModelViewMatrix(mv);
-
 
 		m_shader.bind();
 		m_mesh.draw();
@@ -332,72 +211,58 @@ private:
 
 	void onKeyDown(unsigned int key, bool pressed) override
 	{
-		RoxLogger::log() << "key " << key << " " << pressed << "\n";
+		//RoxLogger::log() << "key " << key << " " << pressed << "\n";
+		RoxLogger::log() << "key " << key << "\n";
 
 		if ((key == ::RoxInput::KEY_BACK || key == ::RoxInput::KEY_ESCAPE) && pressed) {
 			finish();
 		}
 
-		if(key == ::RoxInput::KEY_W && pressed)
+		if (key == ::RoxInput::KEY_W && pressed)
 		{
-			RoxLogger::log() << "A pressed\n";
-			m_move_z += 0.1f;
+			RoxLogger::log() << "W pressed\n";
+
+			RoxMath::Quaternion q = m_mesh.get_rot();
+			RoxMath::AngleRad pitch = q.getEuler().getPitch();
+			RoxLogger::log() << "Pitch Value: " << pitch.value << "\n";
+			RoxLogger::log() << "Pitch Deg: " << pitch.getDeg() << "\n";
+			RoxLogger::log() << "Pitch Rad: " << pitch.getRad() << "\n";
+
+			float new_pitch = pitch.getRad() + 0.0001f;
+			if (new_pitch > 360.0f)
+				new_pitch = 0.0f;
+			RoxLogger::log() << "New Pitch Value: " << new_pitch << "\n";
+
+			q = RoxMath::Quaternion(0, new_pitch, 0);
+
+			m_mesh.set_rot(q);
 		}
 
-		if (key == ::RoxInput::KEY_S && pressed)
-		{
-			RoxLogger::log() << "D pressed\n";
-			m_move_z -= 0.1f;
+		if (key == ::RoxInput::KEY_S && pressed) {
+			RoxLogger::log() << "S pressed\n";
+
+			RoxMath::Vector3 scale = m_mesh.get_scale();
+
+			RoxLogger::log() << "Rotation Value: " << scale.x << "\n";
+			RoxLogger::log() << "Rotation Deg: " << scale.y << "\n";
+			RoxLogger::log() << "Rotation Rad: " << scale.z << "\n";
+
+			float new_scale = scale.x + 0.0001f;
+
+			RoxLogger::log() << "New Rotation Value: " << new_scale << "\n";
+			m_mesh.set_scale(RoxMath::Vector3(new_scale, scale.y, scale.z));
+
+			RoxLogger::log() << "New Rotation Value: " << m_mesh.get_scale().x << "\n";
+			RoxLogger::log() << "New Rotation Value: " << m_mesh.get_scale().y << "\n";
+			RoxLogger::log() << "New Rotation Value: " << m_mesh.get_scale().z << "\n";
+
+
 		}
-
-		if(key == ::RoxInput::KEY_SHIFT && pressed)
-			if ((key == ::RoxInput::KEY_W) && pressed)
-			{
-				RoxLogger::log() << "Shift + A pressed\n";
-				m_move_z += 10.0f;
-			}
-		
-		if (key == ::RoxInput::KEY_SHIFT && pressed)
-			if (key == ::RoxInput::KEY_S && key == ::RoxInput::KEY_SHIFT && pressed)
-			{
-				RoxLogger::log() << "Shift + D pressed\n";
-				m_move_z -= 10.0f;
-			}
-
-
-		if (key == ::RoxInput::KEY_D && pressed)
-		{
-			RoxLogger::log() << "D pressed\n";
-			m_move_x -= 0.1f; 
-		}
-
-		if (key == ::RoxInput::KEY_A && pressed)
-		{
-			RoxLogger::log() << "A pressed\n";
-			m_move_x += 0.1f;
-		}
-
-		if (key == ::RoxInput::KEY_Q && pressed)
-		{
-			RoxLogger::log() << "Q pressed\n";
-			m_move_y += 0.1f;
-		}
-
-		if (key == ::RoxInput::KEY_E && pressed)
-		{
-			RoxLogger::log() << "E pressed\n";
-			m_move_y -= 0.1f;
-		}
-
-
 		
 	}
 
 	void onMouseScroll(int dx, int dy) override
 	{
-		m_rotate_x += dy * 0.1f;
-		m_move_y += dy * 0.1f;
-
 		RoxLogger::log() << "mouse scroll dx: " << dx << " dy: " << dy << "\n";
 		std::cout << "mouse scroll dx: " << dx << " dy: " << dy << "\n";
 	}
@@ -433,14 +298,6 @@ public:
 	testCube() : m_rot(0.0f) {}
 
 private:
-	// Camera Movment and Rotation keys
-	float m_move_z = 2;
-	float m_move_x = 0;
-	float m_move_y = 0;
-	float m_rotate_z = 0;
-	float m_rotate_x = 0;
-	float m_rotate_y = 0;
-
 
 	RoxScene::camera m_camera;
 	RoxScene::mesh m_mesh;

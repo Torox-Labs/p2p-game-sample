@@ -1,20 +1,17 @@
-@sampler base_map "map_Kd"
-
 @all
-//varying vec4 outColor;
+varying vec4 outColor;
 
 @vertex
 
 void main()
 {
-    //outColor = vec4(0.5, 0.5, 0, 1.0);
-    gl_Position= rox_ModelViewProjectionMatrix * rox_Vertex;
+    outColor = vec4(1.0f, 1.0f, 0, 1.0f);
+    gl_Position = rox_ModelViewMatrix * rox_Vertex;
 }
 
 @fragment
-varying vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(0.5, 0.5, 0, 1.0);
+    rox_FragColor = outColor;
 }
