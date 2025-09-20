@@ -109,7 +109,11 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+<<<<<<< HEAD
       <AdditionalIncludeDirectories>D:\Dev\rox-engine\Engine\RoxCore;D:\Dev\rox-engine\Engine\RoxGraphics</AdditionalIncludeDirectories>
+=======
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);E:\CLT\OpenGL\glfw_3.3.9\include;D:\Dev\rox-engine\Engine\RoxCore;D:\Dev\rox-engine\Engine\RoxGraphics</AdditionalIncludeDirectories>
+>>>>>>> 756c6f87d4accfcfa075a5f567820ab6f93b41d2
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,10 +156,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\wall.jpg" />
-    <Image Include="resources\wall.tga" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="stb_image.h" />
+    <Image Include="resources\wall.tga">
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\resources</DestinationFolders>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="resources\cube.nms">

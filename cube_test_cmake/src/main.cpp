@@ -3,7 +3,6 @@
 #include <fstream>
 #include <functional>
 
-
 #include <RoxApp/RoxApp.h>
 
 #include <RoxLogger/RoxLogger.h>
@@ -71,11 +70,15 @@ private:
 		return true;
 	}
 
-
 	bool testFileReading(const char* path)
 	{
 		FILE* file = nullptr;
+
+#ifdef _WIN32
 		fopen_s(&file, path, "rb");
+#elif defined(__linux__)
+		file = fopen(path, "rb");
+#endif
 
 		if (!file)
 		{
@@ -139,16 +142,6 @@ private:
 		RoxRender::setClearDepth(1.0f);
 		RoxRender::DepthTest::enable(RoxRender::DepthTest::LESS);
 
-<<<<<<< HEAD
-		RoxResources::setResourcesPath("D:/Dev/p2p-game-sample/cube_test_vs/resources/");
-		
-		RoxScene::mesh::register_load_function(RoxScene::mesh::load_nms);
-		if (!m_mesh.load("cottage_obj.nms"))
-		{
-			std::cerr << "Failed to load NMS mesh file." << std::endl;
-			return;
-		}
-=======
 		bool load_using_mesh = true;
 
 		if (load_using_mesh)
@@ -175,7 +168,6 @@ private:
 			std::cout << "  Uniform " << i << ": name: " << name << ", type: " << type << std::endl;
 		}
 
->>>>>>> 756c6f87d4accfcfa075a5f567820ab6f93b41d2
 	}
 
 	void onFrame(unsigned int dt) override
@@ -193,15 +185,11 @@ private:
 		mv.translate(0, 0, -2.0f);
 		mv.rotate(30.0f, 1.0f, 0.0f, 0.0f);
 		mv.rotate(m_rot, 0.0f, 1.0f, 0.0f);
-		
+
 		RoxRender::setModelViewMatrix(mv);
 
-<<<<<<< HEAD
-		m_shader.bind();
-=======
 
 		//m_shader.bind();
->>>>>>> 756c6f87d4accfcfa075a5f567820ab6f93b41d2
 		m_mesh.draw();
 		//m_shader.unbind();
 
@@ -242,69 +230,18 @@ private:
 
 	void onKeyDown(unsigned int key, bool pressed) override
 	{
-		//RoxLogger::log() << "key " << key << " " << pressed << "\n";
-		RoxLogger::log() << "key " << key << "\n";
+		RoxLogger::log() << "key " << key << " " << pressed << "\n";
 
 		if ((key == ::RoxInput::KEY_BACK || key == ::RoxInput::KEY_ESCAPE) && pressed) {
 			finish();
 		}
-<<<<<<< HEAD
-
-		if (key == ::RoxInput::KEY_W && pressed)
-		{
-			RoxLogger::log() << "W pressed\n";
-
-			RoxMath::Quaternion q = m_mesh.get_rot();
-			RoxMath::AngleRad pitch = q.getEuler().getPitch();
-			RoxLogger::log() << "Pitch Value: " << pitch.value << "\n";
-			RoxLogger::log() << "Pitch Deg: " << pitch.getDeg() << "\n";
-			RoxLogger::log() << "Pitch Rad: " << pitch.getRad() << "\n";
-
-			float new_pitch = pitch.getRad() + 0.0001f;
-			if (new_pitch > 360.0f)
-				new_pitch = 0.0f;
-			RoxLogger::log() << "New Pitch Value: " << new_pitch << "\n";
-
-			q = RoxMath::Quaternion(0, new_pitch, 0);
-
-			m_mesh.set_rot(q);
-		}
-
-		if (key == ::RoxInput::KEY_S && pressed) {
-			RoxLogger::log() << "S pressed\n";
-
-			RoxMath::Vector3 scale = m_mesh.get_scale();
-
-			RoxLogger::log() << "Rotation Value: " << scale.x << "\n";
-			RoxLogger::log() << "Rotation Deg: " << scale.y << "\n";
-			RoxLogger::log() << "Rotation Rad: " << scale.z << "\n";
-
-			float new_scale = scale.x + 0.0001f;
-
-			RoxLogger::log() << "New Rotation Value: " << new_scale << "\n";
-			m_mesh.set_scale(RoxMath::Vector3(new_scale, scale.y, scale.z));
-
-			RoxLogger::log() << "New Rotation Value: " << m_mesh.get_scale().x << "\n";
-			RoxLogger::log() << "New Rotation Value: " << m_mesh.get_scale().y << "\n";
-			RoxLogger::log() << "New Rotation Value: " << m_mesh.get_scale().z << "\n";
-
-
-		}
-		
-=======
->>>>>>> 756c6f87d4accfcfa075a5f567820ab6f93b41d2
 	}
 
 	void onMouseScroll(int dx, int dy) override
 	{
-<<<<<<< HEAD
-		RoxLogger::log() << "mouse scroll dx: " << dx << " dy: " << dy << "\n";
-		std::cout << "mouse scroll dx: " << dx << " dy: " << dy << "\n";
-=======
 		RoxLogger::log() << "Mouse Scroll\n";
 
-		
->>>>>>> 756c6f87d4accfcfa075a5f567820ab6f93b41d2
+
 	}
 
 	void onMouseMove(int x, int y) override
@@ -318,8 +255,8 @@ private:
 		//RoxLogger::log() << "mouse button " << button << " | " << pressed << "\n";
 		if (button == ::RoxInput::MOUSE_BOTTON::MOUSE_LEFT && pressed)
 		{
-			
-			
+
+
 		}
 
 		if (button == ::RoxInput::MOUSE_BOTTON::MOUSE_RIGHT && pressed)
@@ -361,7 +298,7 @@ int main(int argc, char** argv)
 	RoxLogger::log() << "App Created\n";
 	//app.setTitle("Loading, please wait...");
 	RoxLogger::log() << "Title " << app.getTitle() << "\n";
-	
+
 	app.startWindowed(100, 100, 640, 480, 0);
 	RoxLogger::log() << "exit success\n";
 
