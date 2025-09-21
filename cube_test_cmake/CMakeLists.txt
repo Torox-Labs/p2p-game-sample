@@ -3,39 +3,140 @@ project(cube_test CXX)
 
 # ====== Set C++ Standard ======
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# ====== Platform Detection ======
+if(WIN32)
+    message(STATUS "Building for Windows")
+    set(PLATFORM_WINDOWS TRUE)
+elseif(UNION AND NOT APPLE)
+    message(STATUS "Building for Linux")
+    set(PLATFORM_LINUX TRUE)
+elseif(APPLE)
+    message(STATUS "Building for macOS")
+    set(PLATFORM_MACOS TRUE)
+endif()
+
+# ====== Set Rox Engine Build Path (Early Definition) ======
+set(ROX_ENGINE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../rox-engine")
+set(ROX_ENGINE_BUILD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../rox-engine-build")
 
 # ====== Source and Include Directories ======
 set(SOURCE_DIR "${CMAKE_SOURCE_DIR}/src")
 set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
+set(SHADERS_DIR "${CMAKE_SOURCE_DIR}/shaders")
+set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/resources")
 
-include_directories(${INCLUDE_DIR})
-include_directories(${SOURCE_DIR})
+# ====== Automatically Collect Source Files ======
+# Collect all C++ source files
+file(GLOB_RECURSE CPP_SOURCES 
+    "${SOURCE_DIR}/*.cpp"
+    "${SOURCE_DIR}/*.cxx"
+    "${SOURCE_DIR}/*.cc"
+    "${SOURCE_DIR}/*.c"
+)
 
-file(GLOB_RECURSE SOURCES
-        "${SOURCE_DIR}/*.cpp"
+# Collect all header files (both from src and include directories)
+file(GLOB_RECURSE HEADER_FILES 
+    "${SOURCE_DIR}/*.h"
+    "${SOURCE_DIR}/*.hpp"
+    "${SOURCE_DIR}/*.hxx"
+)
+
+# Add include directory headers if the directory exists
+if(EXISTS "${INCLUDE_DIR}")
+    file(GLOB_RECURSE INCLUDE_HEADERS 
         "${INCLUDE_DIR}/*.h"
+        "${INCLUDE_DIR}/*.hpp"
+        "${INCLUDE_DIR}/*.hxx"
+    )
+    list(APPEND HEADER_FILES ${INCLUDE_HEADERS})
+endif()
+
+# Collect shader files for IDE integration
+file(GLOB_RECURSE SHADER_FILES 
+    "${SHADERS_DIR}/*.glsl"
+    "${SHADERS_DIR}/*.vert"
+    "${SHADERS_DIR}/*.frag"
+    "${SHADERS_DIR}/*.geom"
+    "${SHADERS_DIR}/*.comp"
+    "${SHADERS_DIR}/*.txt"
+    "${SHADERS_DIR}/*.vs"
+    "${SHADERS_DIR}/*.fs"
 )
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+# Collect resource files for IDE integration
+file(GLOB_RECURSE RESOURCE_FILES 
+    "${RESOURCES_DIR}/*.nms"
+    "${RESOURCES_DIR}/*.dds"
+    "${RESOURCES_DIR}/*.tga"
+    "${RESOURCES_DIR}/*.jpg"
+    "${RESOURCES_DIR}/*.png"
+    "${RESOURCES_DIR}/*.bmp"
+    "${RESOURCES_DIR}/*.obj"
+    "${RESOURCES_DIR}/*.mtl"
+    "${RESOURCES_DIR}/*.fbx"
+    "${RESOURCES_DIR}/*.dae"
+    "${RESOURCES_DIR}/*.wav"
+    "${RESOURCES_DIR}/*.ogg"
+    "${RESOURCES_DIR}/*.mp3"
+)
 
-# ====== Set Rox Engine Build Path ======
-set(ROX_ENGINE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../rox-engine")
-set(ROX_ENGINE_BUILD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../rox-engine-build")
+# Debug output for found files
+list(LENGTH CPP_SOURCES NUM_CPP)
+list(LENGTH HEADER_FILES NUM_HEADERS)
+list(LENGTH SHADER_FILES NUM_SHADERS)
+list(LENGTH RESOURCE_FILES NUM_RESOURCES)
 
-# ====== Include Directories =====lear=
+message(STATUS "Found ${NUM_CPP} C++ source files")
+message(STATUS "Found ${NUM_HEADERS} header files")
+message(STATUS "Found ${NUM_SHADERS} shader files")
+message(STATUS "Found ${NUM_RESOURCES} resource files")
+
+# ====== Create the executable ======
+add_executable(${PROJECT_NAME} 
+    ${CPP_SOURCES} 
+    ${HEADER_FILES}
+)
+
+# ====== Include Directories ======
+# Add include directories
+if(EXISTS "${INCLUDE_DIR}")
+    target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR})
+endif()
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${SOURCE_DIR})
+
+# Add Rox Engine include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
-        ${ROX_ENGINE_PATH}/Engine/RoxCore
-        ${ROX_ENGINE_PATH}/Engine/RoxGraphics
+    ${ROX_ENGINE_PATH}/Engine/RoxCore
+    ${ROX_ENGINE_PATH}/Engine/RoxGraphics
 )
 
-# ====== Include Libraries ======
-# Force Debug mode for now since that's where your libraries are built
-set(CMAKE_BUILD_TYPE "Debug")
+# ====== Build Type Configuration ======
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug")
+endif()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(ROX_LIB_DIR "${ROX_ENGINE_BUILD_PATH}/lib/Debug")
+# Windows-specific configuration
+if(PLATFORM_WINDOWS)
+    # For multi-config generators like Visual Studio
+    if(CMAKE_CONFIGURATION_TYPES)
+        set(ROX_LIB_DIR "${ROX_ENGINE_BUILD_PATH}/lib/$<CONFIG>")
+    else()
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            set(ROX_LIB_DIR "${ROX_ENGINE_BUILD_PATH}/lib/Debug")
+        else()
+            set(ROX_LIB_DIR "${ROX_ENGINE_BUILD_PATH}/lib/Release")
+        endif()
+    endif()
 else()
-    set(ROX_LIB_DIR "${ROX_ENGINE_BUILD_PATH}/lib/Release")
+    # Linux/macOS configuration
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(ROX_LIB_DIR "${ROX_ENGINE_BUILD_PATH}/lib/Debug")
+    else()
+        set(ROX_LIB_DIR "${ROX_ENGINE_BUILD_PATH}/lib/Release")
+    endif()
 endif()
 
 # Debug output
@@ -43,52 +144,302 @@ message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 message(STATUS "ROX_LIB_DIR: ${ROX_LIB_DIR}")
 message(STATUS "ROX_ENGINE_BUILD_PATH: ${ROX_ENGINE_BUILD_PATH}")
 
-# ====== Find all libraries in the directory ======
-if(UNIX OR APPLE)
-    file(GLOB ROX_LIBRARIES "${ROX_LIB_DIR}/*.a" "${ROX_LIB_DIR}/*.so" "${ROX_LIB_DIR}/*.dylib")
-elseif(WIN32 OR MSVC)
-    file(GLOB ROX_LIBRARIES "${ROX_LIB_DIR}/*.lib" "${ROX_LIB_DIR}/*.dll")
-else()
-    message(FATAL_ERROR "Unsupported platform")
+# ====== Platform-Specific Library Extensions ======
+if(PLATFORM_WINDOWS)
+    set(STATIC_LIB_EXT ".lib")
+    set(SHARED_LIB_EXT ".dll")
+    set(ENGINE_LIB_NAME "rox_engine")
+elseif(PLATFORM_LINUX)
+    set(STATIC_LIB_EXT ".a")
+    set(SHARED_LIB_EXT ".so")
+    set(ENGINE_LIB_NAME "librox_engine")
+elseif(PLATFORM_MACOS)
+    set(STATIC_LIB_EXT ".a")
+    set(SHARED_LIB_EXT ".dylib")
+    set(ENGINE_LIB_NAME "librox_engine")
 endif()
 
 # ====== Link Libraries ======
-target_link_libraries(${PROJECT_NAME} PRIVATE
+if(PLATFORM_WINDOWS)
+    # Windows linking
+    target_link_libraries(${PROJECT_NAME} PRIVATE
         # Main engine library first
-        ${ROX_LIB_DIR}/librox_engine.so
+        ${ROX_LIB_DIR}/${ENGINE_LIB_NAME}${STATIC_LIB_EXT}
+        
+        # Rox libraries in dependency order
+        ${ROX_LIB_DIR}/RoxApp${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxScene${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxInput${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxRender${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxResources${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxFormats${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxSystem${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxMath${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxMemory${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxLogger${STATIC_LIB_EXT}
+        
+        # Windows system libraries
+        opengl32
+        gdi32
+        user32
+        kernel32
+        shell32
+        ole32
+        oleaut32
+        uuid
+        comdlg32
+        advapi32
+        winmm
+    )
+    
+    # Windows-specific compiler flags
+    if(MSVC)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE
+            _CRT_SECURE_NO_WARNINGS
+            WIN32_LEAN_AND_MEAN
+            NOMINMAX
+        )
+        target_compile_options(${PROJECT_NAME} PRIVATE
+            /W3
+            /permissive-
+        )
+    endif()
+    
+else()
+    # Linux/macOS linking
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        # Main engine library first
+        ${ROX_LIB_DIR}/${ENGINE_LIB_NAME}${SHARED_LIB_EXT}
 
         # High-level libraries
-        ${ROX_LIB_DIR}/libRoxApp.a
-        ${ROX_LIB_DIR}/libRoxScene.a
-        ${ROX_LIB_DIR}/libRoxInput.a
+        ${ROX_LIB_DIR}/libRoxApp${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxScene${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxInput${STATIC_LIB_EXT}
 
         # Mid-level libraries
-        ${ROX_LIB_DIR}/libRoxRender.a
-        ${ROX_LIB_DIR}/libRoxResources.a
-        ${ROX_LIB_DIR}/libRoxFormats.a
-        ${ROX_LIB_DIR}/libRoxSystem.a
+        ${ROX_LIB_DIR}/libRoxRender${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxResources${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxFormats${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxSystem${STATIC_LIB_EXT}
 
         # Core libraries last
-        ${ROX_LIB_DIR}/libRoxMath.a
-        ${ROX_LIB_DIR}/libRoxMemory.a
-        ${ROX_LIB_DIR}/libRoxLogger.a
+        ${ROX_LIB_DIR}/libRoxMath${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxMemory${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxLogger${STATIC_LIB_EXT}
 
-        # System libraries
+        # Linux/macOS system libraries
         pthread
         dl
         GL
-        X11
-)
+    )
+    
+    # Add X11 only on Linux
+    if(PLATFORM_LINUX)
+        target_link_libraries(${PROJECT_NAME} PRIVATE X11)
+    endif()
+    
+    # macOS-specific frameworks
+    if(PLATFORM_MACOS)
+        find_library(COCOA_FRAMEWORK Cocoa)
+        find_library(OPENGL_FRAMEWORK OpenGL)
+        find_library(IOKIT_FRAMEWORK IOKit)
+        find_library(COREVIDEO_FRAMEWORK CoreVideo)
+        
+        target_link_libraries(${PROJECT_NAME} PRIVATE
+            ${COCOA_FRAMEWORK}
+            ${OPENGL_FRAMEWORK}
+            ${IOKIT_FRAMEWORK}
+            ${COREVIDEO_FRAMEWORK}
+        )
+    endif()
+endif()
+
+# ====== Organize Files in IDE ======
+# Create source groups for better organization in Visual Studio/other IDEs
+source_group("Source Files" FILES ${CPP_SOURCES})
+source_group("Header Files" FILES ${HEADER_FILES})
+
+# Create more specific source groups for better organization
+foreach(source ${CPP_SOURCES})
+    get_filename_component(source_path "${source}" PATH)
+    file(RELATIVE_PATH source_path_rel "${SOURCE_DIR}" "${source_path}")
+    string(REPLACE "/" "\\" group_path "${source_path_rel}")
+    source_group("Source Files\\${group_path}" FILES "${source}")
+endforeach()
+
+foreach(header ${HEADER_FILES})
+    get_filename_component(header_path "${header}" PATH)
+    if("${header}" MATCHES "${INCLUDE_DIR}")
+        file(RELATIVE_PATH header_path_rel "${INCLUDE_DIR}" "${header_path}")
+    else()
+        file(RELATIVE_PATH header_path_rel "${SOURCE_DIR}" "${header_path}")
+    endif()
+    string(REPLACE "/" "\\" group_path "${header_path_rel}")
+    source_group("Header Files\\${group_path}" FILES "${header}")
+endforeach()
+
+# ====== Create Asset Targets for IDE Integration ======
+# Create separate targets for shaders and resources to ensure they appear in IDE
+if(SHADER_FILES)
+    add_custom_target(${PROJECT_NAME}_Shaders
+        SOURCES ${SHADER_FILES}
+    )
+    
+    # Organize shader files in folders
+    foreach(shader ${SHADER_FILES})
+        get_filename_component(shader_path "${shader}" PATH)
+        file(RELATIVE_PATH shader_path_rel "${SHADERS_DIR}" "${shader_path}")
+        string(REPLACE "/" "\\" group_path "${shader_path_rel}")
+        if(group_path STREQUAL "")
+            source_group("Shader Files" FILES "${shader}")
+        else()
+            source_group("Shader Files\\${group_path}" FILES "${shader}")
+        endif()
+    endforeach()
+    
+    # Set folder properties for Visual Studio
+    set_target_properties(${PROJECT_NAME}_Shaders PROPERTIES FOLDER "Assets")
+endif()
+
+if(RESOURCE_FILES)
+    add_custom_target(${PROJECT_NAME}_Resources
+        SOURCES ${RESOURCE_FILES}
+    )
+    
+    # Organize resource files in folders
+    foreach(resource ${RESOURCE_FILES})
+        get_filename_component(resource_path "${resource}" PATH)
+        file(RELATIVE_PATH resource_path_rel "${RESOURCES_DIR}" "${resource_path}")
+        string(REPLACE "/" "\\" group_path "${resource_path_rel}")
+        if(group_path STREQUAL "")
+            source_group("Resource Files" FILES "${resource}")
+        else()
+            source_group("Resource Files\\${group_path}" FILES "${resource}")
+        endif()
+    endforeach()
+    
+    # Set folder properties for Visual Studio
+    set_target_properties(${PROJECT_NAME}_Resources PROPERTIES FOLDER "Assets")
+endif()
+
+# ====== Set Folder Properties for Visual Studio ======
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Applications")
+
+# Create a combined assets target that includes both shaders and resources
+if(SHADER_FILES OR RESOURCE_FILES)
+    add_custom_target(${PROJECT_NAME}_AllAssets
+        SOURCES ${SHADER_FILES} ${RESOURCE_FILES}
+    )
+    
+    # Organize all asset files
+    foreach(asset ${SHADER_FILES} ${RESOURCE_FILES})
+        get_filename_component(asset_path "${asset}" PATH)
+        get_filename_component(asset_name "${asset}" NAME)
+        
+        if("${asset}" MATCHES "${SHADERS_DIR}")
+            file(RELATIVE_PATH asset_path_rel "${SHADERS_DIR}" "${asset_path}")
+            if(asset_path_rel STREQUAL "")
+                source_group("Shaders" FILES "${asset}")
+            else()
+                string(REPLACE "/" "\\" group_path "${asset_path_rel}")
+                source_group("Shaders\\${group_path}" FILES "${asset}")
+            endif()
+        elseif("${asset}" MATCHES "${RESOURCES_DIR}")
+            file(RELATIVE_PATH asset_path_rel "${RESOURCES_DIR}" "${asset_path}")
+            if(asset_path_rel STREQUAL "")
+                source_group("Resources" FILES "${asset}")
+            else()
+                string(REPLACE "/" "\\" group_path "${asset_path_rel}")
+                source_group("Resources\\${group_path}" FILES "${asset}")
+            endif()
+        endif()
+    endforeach()
+    
+    set_target_properties(${PROJECT_NAME}_AllAssets PROPERTIES FOLDER "Assets")
+    
+    # Make the main target depend on the assets
+    add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_AllAssets)
+    if(TARGET ${PROJECT_NAME}_Shaders)
+        add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_Shaders)
+    endif()
+    if(TARGET ${PROJECT_NAME}_Resources)
+        add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_Resources)
+    endif()
+endif()
 
 # ====== Copy Resources ======
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_CURRENT_SOURCE_DIR}/resources
-    $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
+# Copy resources directory if it exists
+if(EXISTS "${RESOURCES_DIR}")
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${RESOURCES_DIR}
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
+        COMMENT "Copying resources to output directory"
+    )
+endif()
+
+# Copy shaders directory if it exists
+if(EXISTS "${SHADERS_DIR}")
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${SHADERS_DIR}
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders
+        COMMENT "Copying shaders to output directory"
+    )
+endif()
+
+# ====== Windows-specific DLL copying ======
+if(PLATFORM_WINDOWS)
+    # Copy engine DLL if it exists
+    if(EXISTS "${ROX_LIB_DIR}/rox_engine.dll")
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${ROX_LIB_DIR}/rox_engine.dll"
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+            COMMENT "Copying Rox Engine DLL"
+        )
+    endif()
+    
+    # Copy any other DLLs from the lib directory
+    file(GLOB ROX_DLLS "${ROX_LIB_DIR}/*.dll")
+    if(ROX_DLLS)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${ROX_DLLS}
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+            COMMENT "Copying additional DLLs"
+        )
+    endif()
+endif()
+
+# ====== Installation (Optional) ======
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
 )
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders
-    $<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders
+# Install resources if they exist
+if(EXISTS "${RESOURCES_DIR}")
+    install(DIRECTORY ${RESOURCES_DIR}
+        DESTINATION bin
+        FILES_MATCHING PATTERN "*"
+    )
+endif()
+
+# Install shaders if they exist
+if(EXISTS "${SHADERS_DIR}")
+    install(DIRECTORY ${SHADERS_DIR}
+        DESTINATION bin
+        FILES_MATCHING PATTERN "*"
+    )
+endif()
+
+# ====== Auto-regenerate on CMakeLists.txt change ======
+# This ensures that when you add new files, CMake will automatically detect them
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    ${SOURCE_DIR}
+    ${INCLUDE_DIR}
+    ${SHADERS_DIR}
+    ${RESOURCES_DIR}
 )

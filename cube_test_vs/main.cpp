@@ -139,7 +139,6 @@ private:
 		RoxRender::setClearDepth(1.0f);
 		RoxRender::DepthTest::enable(RoxRender::DepthTest::LESS);
 
-<<<<<<< HEAD
 		RoxResources::setResourcesPath("D:/Dev/p2p-game-sample/cube_test_vs/resources/");
 		
 		RoxScene::mesh::register_load_function(RoxScene::mesh::load_nms);
@@ -148,7 +147,6 @@ private:
 			std::cerr << "Failed to load NMS mesh file." << std::endl;
 			return;
 		}
-=======
 		bool load_using_mesh = true;
 
 		if (load_using_mesh)
@@ -175,7 +173,6 @@ private:
 			std::cout << "  Uniform " << i << ": name: " << name << ", type: " << type << std::endl;
 		}
 
->>>>>>> 756c6f87d4accfcfa075a5f567820ab6f93b41d2
 	}
 
 	void onFrame(unsigned int dt) override
@@ -196,12 +193,7 @@ private:
 		
 		RoxRender::setModelViewMatrix(mv);
 
-<<<<<<< HEAD
 		m_shader.bind();
-=======
-
-		//m_shader.bind();
->>>>>>> 756c6f87d4accfcfa075a5f567820ab6f93b41d2
 		m_mesh.draw();
 		//m_shader.unbind();
 
@@ -248,7 +240,6 @@ private:
 		if ((key == ::RoxInput::KEY_BACK || key == ::RoxInput::KEY_ESCAPE) && pressed) {
 			finish();
 		}
-<<<<<<< HEAD
 
 		if (key == ::RoxInput::KEY_W && pressed)
 		{
@@ -291,20 +282,13 @@ private:
 
 		}
 		
-=======
->>>>>>> 756c6f87d4accfcfa075a5f567820ab6f93b41d2
 	}
 
 	void onMouseScroll(int dx, int dy) override
 	{
-<<<<<<< HEAD
-		RoxLogger::log() << "mouse scroll dx: " << dx << " dy: " << dy << "\n";
-		std::cout << "mouse scroll dx: " << dx << " dy: " << dy << "\n";
-=======
 		RoxLogger::log() << "Mouse Scroll\n";
 
 		
->>>>>>> 756c6f87d4accfcfa075a5f567820ab6f93b41d2
 	}
 
 	void onMouseMove(int x, int y) override

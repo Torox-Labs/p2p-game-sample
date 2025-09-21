@@ -1,4 +1,6 @@
 @pass "default"
 shader="obj.nsh"
-//blend="src_alpha:inv_src_alpha"
-//cull="none"
+blend="src_alpha:inv_src_alpha"
+cull=ccw
+"alpha test"=1.0,-0.9
+zwrite=false

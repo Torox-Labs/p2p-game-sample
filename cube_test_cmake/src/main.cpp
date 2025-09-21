@@ -21,6 +21,8 @@
 #include <RoxFormats/RoxTruevisionGraphicsAdapter.h>
 #include <RoxFormats/RoxMesh.h>
 
+#include "RoxSystem/RoxSystem.h"
+
 
 class testCube : public RoxApp::RoxApp
 {
@@ -133,6 +135,8 @@ private:
 		return true;
 	}
 
+
+
 	void onInit() override
 	{
 		RoxLogger::log() << "Init\n";
@@ -144,19 +148,30 @@ private:
 
 		bool load_using_mesh = true;
 
+		RoxLogger::log() << "App Path: " << RoxSystem::getAppPath() << "\n";
+
 		if (load_using_mesh)
 		{
-			RoxResources::setResourcesPath("D:/Dev/p2p-game-sample/cube_test_vs/resources/");
+			RoxResources::setResourcesPath("D:/Dev/p2p-game-sample/cube_test_cmake/resources/");
 
 			RoxScene::mesh::register_load_function(RoxScene::mesh::load_nms);
-			if (!m_mesh.load("cube.nms"))
+			if (!m_mesh.load("spaceship.nms"))
 			{
 				// Handle loading error
 				std::cerr << "Failed to load NMS mesh file." << std::endl;
 				return;
 			}
-		}else
-			testFileReading("D:/Dev/p2p-game-sample/cube_test_vs/resources/cube.nms");
+			
+			RoxLogger::log() << "Groups count: " << m_mesh.get_groups_count() <<
+				" name: " << m_mesh.get_name() << " scale: " << std::to_string(m_mesh.get_scale().length()) <<"\n";
+			
+
+		}
+
+		m_mesh.set_scale(0.3f);
+
+
+		//testFileReading("D:\Dev\p2p-game-sample\cube_test_cmake/resources/cube.nms");
 
 		std::cout << "============= Uniforms list ===============\n";
 
@@ -191,6 +206,7 @@ private:
 
 		//m_shader.bind();
 		m_mesh.draw();
+		// m_mesh.draw_group(1);
 		//m_shader.unbind();
 
 		static unsigned int fps_counter = 0, fps_update_timer = 0;
