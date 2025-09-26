@@ -68,7 +68,6 @@ file(GLOB_RECURSE SHADER_FILES
 # Collect resource files for IDE integration
 file(GLOB_RECURSE RESOURCE_FILES 
     "${RESOURCES_DIR}/*.nms"
-    "${RESOURCES_DIR}/*.txt"
     "${RESOURCES_DIR}/*.dds"
     "${RESOURCES_DIR}/*.tga"
     "${RESOURCES_DIR}/*.jpg"
@@ -81,7 +80,6 @@ file(GLOB_RECURSE RESOURCE_FILES
     "${RESOURCES_DIR}/*.wav"
     "${RESOURCES_DIR}/*.ogg"
     "${RESOURCES_DIR}/*.mp3"
-    "${RESOURCES_DIR}/*.nsh"
 )
 
 # Debug output for found files
@@ -99,8 +97,6 @@ message(STATUS "Found ${NUM_RESOURCES} resource files")
 add_executable(${PROJECT_NAME} 
     ${CPP_SOURCES} 
     ${HEADER_FILES}
-    ${SHADER_FILES}
-    ${RESOURCE_FILES}
 )
 
 # ====== Include Directories ======
@@ -149,121 +145,119 @@ message(STATUS "ROX_LIB_DIR: ${ROX_LIB_DIR}")
 message(STATUS "ROX_ENGINE_BUILD_PATH: ${ROX_ENGINE_BUILD_PATH}")
 
 # ====== Platform-Specific Library Extensions ======
- if(PLATFORM_WINDOWS)
-     set(STATIC_LIB_EXT ".lib")
-     set(SHARED_LIB_EXT ".dll")
-     set(ENGINE_LIB_NAME "rox_engine")
- elseif(PLATFORM_LINUX)
-     set(STATIC_LIB_EXT ".a")
-     set(SHARED_LIB_EXT ".so")
-     set(ENGINE_LIB_NAME "librox_engine")
- elseif(PLATFORM_MACOS)
-     set(STATIC_LIB_EXT ".a")
-     set(SHARED_LIB_EXT ".dylib")
-     set(ENGINE_LIB_NAME "librox_engine")
- endif()
+if(PLATFORM_WINDOWS)
+    set(STATIC_LIB_EXT ".lib")
+    set(SHARED_LIB_EXT ".dll")
+    set(ENGINE_LIB_NAME "rox_engine")
+elseif(PLATFORM_LINUX)
+    set(STATIC_LIB_EXT ".a")
+    set(SHARED_LIB_EXT ".so")
+    set(ENGINE_LIB_NAME "librox_engine")
+elseif(PLATFORM_MACOS)
+    set(STATIC_LIB_EXT ".a")
+    set(SHARED_LIB_EXT ".dylib")
+    set(ENGINE_LIB_NAME "librox_engine")
+endif()
 
- # ====== Link Libraries ======
- if(PLATFORM_WINDOWS)
-     # Windows linking
-     target_link_libraries(${PROJECT_NAME} PRIVATE
-         # Main engine library first
-         ${ROX_LIB_DIR}/${ENGINE_LIB_NAME}${STATIC_LIB_EXT}
-       
-         # Rox libraries in dependency order
-         ${ROX_LIB_DIR}/RoxApp${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/RoxScene${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/RoxInput${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/RoxRender${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/RoxResources${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/RoxFormats${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/RoxSystem${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/RoxMath${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/RoxMemory${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/RoxLogger${STATIC_LIB_EXT}
-       
-         # Windows system libraries
-         opengl32
-         gdi32
-         user32
-         kernel32
-         shell32
-         ole32
-         oleaut32
-         uuid
-         comdlg32
-         advapi32
-         winmm
-     )
-   
-     # Windows-specific compiler flags
-     if(MSVC)
-         target_compile_definitions(${PROJECT_NAME} PRIVATE
-             _CRT_SECURE_NO_WARNINGS
-             WIN32_LEAN_AND_MEAN
-             NOMINMAX
-         )
-         target_compile_options(${PROJECT_NAME} PRIVATE
-             /W3
-             /permissive-
-         )
-     endif()
-   
- else()
-     # Linux/macOS linking
-     target_link_libraries(${PROJECT_NAME} PRIVATE
-         # Main engine library first
-         ${ROX_LIB_DIR}/${ENGINE_LIB_NAME}${SHARED_LIB_EXT}
+# ====== Link Libraries ======
+if(PLATFORM_WINDOWS)
+    # Windows linking
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        # Main engine library first
+        ${ROX_LIB_DIR}/${ENGINE_LIB_NAME}${STATIC_LIB_EXT}
+        
+        # Rox libraries in dependency order
+        ${ROX_LIB_DIR}/RoxApp${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxScene${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxInput${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxRender${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxResources${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxFormats${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxSystem${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxMath${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxMemory${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/RoxLogger${STATIC_LIB_EXT}
+        
+        # Windows system libraries
+        opengl32
+        gdi32
+        user32
+        kernel32
+        shell32
+        ole32
+        oleaut32
+        uuid
+        comdlg32
+        advapi32
+        winmm
+    )
+    
+    # Windows-specific compiler flags
+    if(MSVC)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE
+            _CRT_SECURE_NO_WARNINGS
+            WIN32_LEAN_AND_MEAN
+            NOMINMAX
+        )
+        target_compile_options(${PROJECT_NAME} PRIVATE
+            /W3
+            /permissive-
+        )
+    endif()
+    
+else()
+    # Linux/macOS linking
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        # Main engine library first
+        ${ROX_LIB_DIR}/${ENGINE_LIB_NAME}${SHARED_LIB_EXT}
 
-         # High-level libraries
-         ${ROX_LIB_DIR}/libRoxApp${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/libRoxScene${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/libRoxInput${STATIC_LIB_EXT}
+        # High-level libraries
+        ${ROX_LIB_DIR}/libRoxApp${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxScene${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxInput${STATIC_LIB_EXT}
 
-         # Mid-level libraries
-         ${ROX_LIB_DIR}/libRoxRender${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/libRoxResources${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/libRoxFormats${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/libRoxSystem${STATIC_LIB_EXT}
+        # Mid-level libraries
+        ${ROX_LIB_DIR}/libRoxRender${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxResources${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxFormats${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxSystem${STATIC_LIB_EXT}
 
-         # Core libraries last
-         ${ROX_LIB_DIR}/libRoxMath${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/libRoxMemory${STATIC_LIB_EXT}
-         ${ROX_LIB_DIR}/libRoxLogger${STATIC_LIB_EXT}
+        # Core libraries last
+        ${ROX_LIB_DIR}/libRoxMath${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxMemory${STATIC_LIB_EXT}
+        ${ROX_LIB_DIR}/libRoxLogger${STATIC_LIB_EXT}
 
-         # Linux/macOS system libraries
-         pthread
-         dl
-         GL
-     )
-   
-     # Add X11 only on Linux
-     if(PLATFORM_LINUX)
-         target_link_libraries(${PROJECT_NAME} PRIVATE X11)
-     endif()
-   
-     # macOS-specific frameworks
-     if(PLATFORM_MACOS)
-         find_library(COCOA_FRAMEWORK Cocoa)
-         find_library(OPENGL_FRAMEWORK OpenGL)
-         find_library(IOKIT_FRAMEWORK IOKit)
-         find_library(COREVIDEO_FRAMEWORK CoreVideo)
-       
-         target_link_libraries(${PROJECT_NAME} PRIVATE
-             ${COCOA_FRAMEWORK}
-             ${OPENGL_FRAMEWORK}
-             ${IOKIT_FRAMEWORK}
-             ${COREVIDEO_FRAMEWORK}
-         )
-     endif()
- endif()
+        # Linux/macOS system libraries
+        pthread
+        dl
+        GL
+    )
+    
+    # Add X11 only on Linux
+    if(PLATFORM_LINUX)
+        target_link_libraries(${PROJECT_NAME} PRIVATE X11)
+    endif()
+    
+    # macOS-specific frameworks
+    if(PLATFORM_MACOS)
+        find_library(COCOA_FRAMEWORK Cocoa)
+        find_library(OPENGL_FRAMEWORK OpenGL)
+        find_library(IOKIT_FRAMEWORK IOKit)
+        find_library(COREVIDEO_FRAMEWORK CoreVideo)
+        
+        target_link_libraries(${PROJECT_NAME} PRIVATE
+            ${COCOA_FRAMEWORK}
+            ${OPENGL_FRAMEWORK}
+            ${IOKIT_FRAMEWORK}
+            ${COREVIDEO_FRAMEWORK}
+        )
+    endif()
+endif()
 
 # ====== Organize Files in IDE ======
 # Create source groups for better organization in Visual Studio/other IDEs
 source_group("Source Files" FILES ${CPP_SOURCES})
 source_group("Header Files" FILES ${HEADER_FILES})
-source_group("Shader Files" FILES ${SHADER_FILES})
-source_group("Resource Files" FILES ${RESOURCE_FILES})
 
 # Create more specific source groups for better organization
 foreach(source ${CPP_SOURCES})
@@ -284,73 +278,49 @@ foreach(header ${HEADER_FILES})
     source_group("Header Files\\${group_path}" FILES "${header}")
 endforeach()
 
-# Organize shader files in IDE
-foreach(shader ${SHADER_FILES})
-    get_filename_component(shader_path "${shader}" PATH)
-    file(RELATIVE_PATH shader_path_rel "${SHADERS_DIR}" "${shader_path}")
-    string(REPLACE "/" "\\" group_path "${shader_path_rel}")
-    if(group_path STREQUAL "")
-        source_group("Shader Files" FILES "${shader}")
-    else()
-        source_group("Shader Files\\${group_path}" FILES "${shader}")
-    endif()
-endforeach()
-
-# Organize resource files in IDE
-foreach(resource ${RESOURCE_FILES})
-    get_filename_component(resource_path "${resource}" PATH)
-    file(RELATIVE_PATH resource_path_rel "${RESOURCES_DIR}" "${resource_path}")
-    string(REPLACE "/" "\\" group_path "${resource_path_rel}")
-    if(group_path STREQUAL "")
-        source_group("Resource Files" FILES "${resource}")
-    else()
-        source_group("Resource Files\\${group_path}" FILES "${resource}")
-    endif()
-endforeach()
-
 # ====== Create Asset Targets for IDE Integration ======
 # Create separate targets for shaders and resources to ensure they appear in IDE
-# if(SHADER_FILES)
-#     add_custom_target(${PROJECT_NAME}_Shaders
-#         SOURCES ${SHADER_FILES}
-#     )
+if(SHADER_FILES)
+    add_custom_target(${PROJECT_NAME}_Shaders
+        SOURCES ${SHADER_FILES}
+    )
     
-#     # Organize shader files in folders
-#     foreach(shader ${SHADER_FILES})
-#         get_filename_component(shader_path "${shader}" PATH)
-#         file(RELATIVE_PATH shader_path_rel "${SHADERS_DIR}" "${shader_path}")
-#         string(REPLACE "/" "\\" group_path "${shader_path_rel}")
-#         if(group_path STREQUAL "")
-#             source_group("Shader Files" FILES "${shader}")
-#         else()
-#             source_group("Shader Files\\${group_path}" FILES "${shader}")
-#         endif()
-#     endforeach()
+    # Organize shader files in folders
+    foreach(shader ${SHADER_FILES})
+        get_filename_component(shader_path "${shader}" PATH)
+        file(RELATIVE_PATH shader_path_rel "${SHADERS_DIR}" "${shader_path}")
+        string(REPLACE "/" "\\" group_path "${shader_path_rel}")
+        if(group_path STREQUAL "")
+            source_group("Shader Files" FILES "${shader}")
+        else()
+            source_group("Shader Files\\${group_path}" FILES "${shader}")
+        endif()
+    endforeach()
     
-#     # Set folder properties for Visual Studio
-#     set_target_properties(${PROJECT_NAME}_Shaders PROPERTIES FOLDER "Assets")
-# endif()
+    # Set folder properties for Visual Studio
+    set_target_properties(${PROJECT_NAME}_Shaders PROPERTIES FOLDER "Assets")
+endif()
 
-# if(RESOURCE_FILES)
-#     add_custom_target(${PROJECT_NAME}_Resources
-#         SOURCES ${RESOURCE_FILES}
-#     )
+if(RESOURCE_FILES)
+    add_custom_target(${PROJECT_NAME}_Resources
+        SOURCES ${RESOURCE_FILES}
+    )
     
-#     # Organize resource files in folders
-#     foreach(resource ${RESOURCE_FILES})
-#         get_filename_component(resource_path "${resource}" PATH)
-#         file(RELATIVE_PATH resource_path_rel "${RESOURCES_DIR}" "${resource_path}")
-#         string(REPLACE "/" "\\" group_path "${resource_path_rel}")
-#         if(group_path STREQUAL "")
-#             source_group("Resource Files" FILES "${resource}")
-#         else()
-#             source_group("Resource Files\\${group_path}" FILES "${resource}")
-#         endif()
-#     endforeach()
+    # Organize resource files in folders
+    foreach(resource ${RESOURCE_FILES})
+        get_filename_component(resource_path "${resource}" PATH)
+        file(RELATIVE_PATH resource_path_rel "${RESOURCES_DIR}" "${resource_path}")
+        string(REPLACE "/" "\\" group_path "${resource_path_rel}")
+        if(group_path STREQUAL "")
+            source_group("Resource Files" FILES "${resource}")
+        else()
+            source_group("Resource Files\\${group_path}" FILES "${resource}")
+        endif()
+    endforeach()
     
-#     # Set folder properties for Visual Studio
-#     set_target_properties(${PROJECT_NAME}_Resources PROPERTIES FOLDER "Assets")
-# endif()
+    # Set folder properties for Visual Studio
+    set_target_properties(${PROJECT_NAME}_Resources PROPERTIES FOLDER "Assets")
+endif()
 
 # ====== Set Folder Properties for Visual Studio ======
 # set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Applications")
@@ -418,7 +388,7 @@ if(EXISTS "${SHADERS_DIR}")
     )
 endif()
 
-# # ====== Windows-specific DLL copying ======
+# ====== Windows-specific DLL copying ======
 if(PLATFORM_WINDOWS)
     # Copy engine DLL if it exists
     if(EXISTS "${ROX_LIB_DIR}/rox_engine.dll")
@@ -464,13 +434,6 @@ if(EXISTS "${SHADERS_DIR}")
         FILES_MATCHING PATTERN "*"
     )
 endif()
-
-# ====== Link Libraries ======
-# Add any external libraries that your project needs
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE
-    # External Libraries like OpenGL, GLAD, etc.
-)
 
 # ====== Auto-regenerate on CMakeLists.txt change ======
 # This ensures that when you add new files, CMake will automatically detect them

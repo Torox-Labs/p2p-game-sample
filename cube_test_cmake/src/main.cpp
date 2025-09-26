@@ -168,7 +168,7 @@ private:
 
 		}
 
-		m_mesh.set_scale(0.3f);
+		m_mesh.set_scale(0.5f);
 
 
 		//testFileReading("D:\Dev\p2p-game-sample\cube_test_cmake/resources/cube.nms");
