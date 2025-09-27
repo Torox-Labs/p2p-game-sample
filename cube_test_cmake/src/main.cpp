@@ -205,7 +205,7 @@ private:
 
 
 		//m_shader.bind();
-		m_mesh.draw();
+		m_mesh.draw_group(2);
 		// m_mesh.draw_group(1);
 		//m_shader.unbind();
 

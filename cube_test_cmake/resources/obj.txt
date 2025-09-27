@@ -1,12 +1,9 @@
 @pass "default"
 shader="obj.nsh"
-blend="src_alpha:inv_src_alpha"
-cull=ccw
-zwrite=false
+// blend="one:zero"
+//cull=ccw
+zwrite=true
 
-@pass "cap"
-shader="cap.nsh"
-blend="src_alpha:inv_src_alpha"
-cull=ccw
-"alpha test"=1.0,-0.9
-zwrite=false
+// @pass "default"
+// shader="cube.nsh"
+// zwrite=true
