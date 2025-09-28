@@ -1,8 +1,11 @@
 @pass "default"
-shader="obj.nsh"
+shader="Cap.nsh"
 // blend="one:zero"
 //cull=ccw
 zwrite=true
+
+// @pass "default"
+// shader="Glass.nsh"
 
 // @pass "default"
 // shader="cube.nsh"

@@ -1,0 +1,3 @@
+@pass "default"
+shader="Cap.nsh"
+zwrite=true

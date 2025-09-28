@@ -161,7 +161,35 @@ private:
 				std::cerr << "Failed to load NMS mesh file." << std::endl;
 				return;
 			}
-			
+
+			// Debug material information
+			std::cout << "============= Materials Debug ===============\n";
+			for (int i = 0; i < m_mesh.get_groups_count(); ++i) {
+				std::cout << "Group " << i << ": " << m_mesh.get_group_name(i) << std::endl;
+				const auto& material = m_mesh.get_material(i);
+				// Print material properties if accessible
+				std::cout << "  Material properties:" << std::endl;
+				std::cout << "    Name: " << material.get_name() << std::endl;
+
+				// Print texture information
+				std::cout << "    Passes: " << material.get_passes_count() << std::endl;
+				for (int p = 0; p < material.get_passes_count(); ++p) {
+					std::cout << "      Pass " << p << ": " << material.get_pass_name(p) << std::endl;
+				}
+
+				std::cout << "   Textures: " << material.get_textures_count() << std::endl;
+				for (int t = 0; t < material.get_textures_count(); ++t) {
+					std::cout << "      Texture " << t << ": " << material.get_texture_semantics(t) << std::endl;
+				}
+
+				std::cout << "    Params: " << material.get_params_count() << std::endl;
+				for (int param_idx = 0; param_idx < material.get_params_count(); ++param_idx) {
+					std::cout << "      Param " << param_idx << ": " << material.get_param_name(param_idx) << std::endl;
+				}
+
+
+			}
+
 			RoxLogger::log() << "Groups count: " << m_mesh.get_groups_count() <<
 				" name: " << m_mesh.get_name() << " scale: " << std::to_string(m_mesh.get_scale().length()) <<"\n";
 			
@@ -205,8 +233,8 @@ private:
 
 
 		//m_shader.bind();
-		m_mesh.draw_group(2);
-		// m_mesh.draw_group(1);
+		// m_mesh.draw_group(2);
+		m_mesh.draw();
 		//m_shader.unbind();
 
 		static unsigned int fps_counter = 0, fps_update_timer = 0;

@@ -86,5 +86,8 @@ void main()
     vec3 litColor = calculateLighting(texColor.rgb, outNormal, outWorldPos);
     
     // Output final color
-    FragColor = vec4(litColor, texColor.a);
+    //FragColor = vec4(litColor, texColor.a);
+    
+    FragColor = vec4(outColor.xyz, texture2D(base_map, texColor.xy).r * outColor.a);
+
 }
